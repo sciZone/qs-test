@@ -176,7 +176,7 @@ class qs_test(object):
             #   then the Test Plan does not exist and report the error
             testSet = synapsert.synapsert()
             
-            self.authorization = (self.test_info_dict['username'],'spacey')
+            self.authorization = (self.test_info_dict['username'],'PooKlB2PnsmQUwx2oixQFdT7eozmVIns')
             
             try:
                 resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'])
@@ -399,5 +399,4 @@ if __name__ == '__main__':
 
     myMainTest = qs_test()
     
-    print('Get Test Cycles')
 

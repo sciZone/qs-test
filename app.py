@@ -2,9 +2,33 @@
 from ecdsa import SigningKey, NIST384p
 import base64
 import importlib
+import urllib
 import requests
+import sys
+import os
+import os.path
+import socket
+import time
+import timeit
+import getopt
+from tempfile import mkstemp
+try:
+    from BaseHTTPServer import HTTPServer
+    from SimpleHTTPServer import SimpleHTTPRequestHandler
+except ImportError:
+    from http.server import HTTPServer, SimpleHTTPRequestHandler
+
+from tlslite import TLSConnection, Fault, HandshakeSettings, \
+    X509, X509CertChain, IMAP4_TLS, VerifierDB, Session, SessionCache, \
+    parsePEMKey, constants, \
+    AlertDescription, HTTPTLSConnection, TLSSocketServerMixIn, \
+    POP3_TLS, m2cryptoLoaded, pycryptoLoaded, gmpyLoaded, tackpyLoaded, \
+    Checker, __version__
+from tlslite.handshakesettings import VirtualHost, Keypair
+
+from tlslite.utils.cryptomath import prngName, getRandomBytes
+from tlslite.utils import keyfactory
 from urllib.parse import urlparse
-from tlslite import *
 import oauth2 as oauth
 
 class SignatureMethod_RSA_SHA1(oauth.SignatureMethod):
@@ -33,8 +57,8 @@ class SignatureMethod_RSA_SHA1(oauth.SignatureMethod):
         with open('../rsa.pem', 'r') as f:
             data = f.read()
         privateKeyString = data.strip()
-
-        privatekey = keyfactory.parsePrivateKey(privateKeyString)
+        privatekey = secure1.keyfactory.parsePrivateKey(privateKeyString)
+        #privatekey = keyfactory.parsePrivateKey(privateKeyString)
         signature = privatekey.hashAndSign(raw)
 
         return base64.b64encode(signature)
@@ -55,8 +79,16 @@ consumer = oauth.Consumer(consumer_key, consumer_secret)
 client = oauth.Client(consumer)
 
 # Lets try to access a JIRA issue (BULK-1). We should get a 401.
-resp, content = client.request(data_url, "GET")
-if resp['status'] != '401':
+host_url='http://localhost:8080'
+url_api = host_url+'/rest/synapse/latest/public/testPlan/TPX-15/cycle/7/testRunsByCycleId'
+authorization = ('spacetravelerx','spacey')
+resp = requests.get(url=url_api, auth=authorization)
+            
+            
+#resp, content = client.request(data_url, "GET")
+print(resp.status_code)
+#if resp.status_code != '401':
+if resp.status_code == '401':
     raise Exception("Should have no access!")
 
 consumer = oauth.Consumer(consumer_key, consumer_secret)
@@ -68,7 +100,7 @@ client.set_signature_method(SignatureMethod_RSA_SHA1())
 # said access token.
 
 resp, content = client.request(request_token_url, "POST")
-if resp['status'] != '200':
+if resp.status_code != '200':
     raise Exception("Invalid response %s: %s" % (resp['status'],  content))
 
 request_token = dict(urlparse.parse_qsl(content))
