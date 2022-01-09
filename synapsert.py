@@ -393,3 +393,41 @@ class synapsert(object):
             resp_rest = heyJira.api_request_delete(delete_step_by_stepNo_rest_api, '{}', authorization)
 
             return resp_rest
+            
+            
+# -----------------------------------------------------------------------------------
+#
+#  Requirement Resource
+#
+
+#
+#	Get All Requirements for a given project
+#
+
+
+#
+
+    def get_all_child_requirements(self,host_url, authorization, requirementIssueKey):
+            heyJira = jira_rest_api.jira_rest()
+            get_all_child_req = host_url+'/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/getChildren'
+            print(get_all_child_req)
+            resp_rest = heyJira.api_request_get(get_all_child_req, authorization)
+            respj = resp_rest.json()
+
+            return resp_rest, respj
+
+#
+#	Get Immediate Child Requirements from a Requirement
+#
+
+
+    def get_immediate_child_requirements(self,host_url, authorization, requirementIssueKey):
+            heyJira = jira_rest_api.jira_rest()
+            get_child_req_api = host_url+'/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/getOnlyImmediateChildren'
+            print(get_child_req_api)
+            resp_rest = heyJira.api_request_get(get_child_req_api, authorization)
+            print(resp_rest)
+            respj = resp_rest.json()
+
+            return resp_rest, respj
+

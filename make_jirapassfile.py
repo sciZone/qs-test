@@ -26,7 +26,7 @@ import base64
 #
 #
 
-def write_fernet(pgpassword):
+def write_fernet(jira_password):
     f = open(f"config/.qsjira_key", "wb")
     password_key = Fernet.generate_key()
     f.write(password_key)
@@ -37,7 +37,7 @@ def write_fernet(pgpassword):
     cipher = Fernet(password_key)
     
     # encode('uft-8') method is used to convert the pgpassword string into a bytes array
-    jirapassword_encoded = jirapassword.encode('utf-8')
+    jirapassword_encoded = jira_password.encode('utf-8')
     token = cipher.encrypt(jirapassword_encoded)
     logging.info('Token Generated and written to .qsjirapassfile')
     f.write(token)
