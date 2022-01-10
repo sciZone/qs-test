@@ -2,7 +2,7 @@
 Core Test Class for QS_Test
 
 
-Copyright (c) 2018-2021, sci_Zone, Inc.
+Copyright (c) 2018-2022, sci_Zone, Inc.
 """
 
 
