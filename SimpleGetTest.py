@@ -30,7 +30,7 @@ class qs_test:
 
 if __name__ == '__main__':
 
-    authorization = ('andrewsantangelo','Lisalor!1lor')
+    authorization = ('auser','apassword')
     myTest = synapsert.synapsert()
     
     print('Get Immediate Child Requirements')
