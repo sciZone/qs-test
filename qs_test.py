@@ -142,6 +142,11 @@ class qs_test(object):
         self.qt_log_append = config.ENV_CONFIG.get('QT_LOG_APPEND', False)
         self.qs_user = config.ENV_CONFIG.get('QS_USER', None)
         
+        qspass_file = config.ENV_CONFIG.get('QS_PASSSFILE', None)
+        if qspass_file == None:
+            self.qs_pass_file = f"config/.qsjirapassfile"
+        else:
+            self.qs_pass_file = qspass_file
 
         # 
         #  Set up log file IF enabled
@@ -159,6 +164,10 @@ class qs_test(object):
             
             dt = str(datetime.datetime.now())
             logging.info("------ Start Testing: "+dt)
+            
+        #  Get user authorization information
+        
+        self.get_token()
 
         #
         #  Get current test plan info
@@ -176,7 +185,7 @@ class qs_test(object):
             #   then the Test Plan does not exist and report the error
             testSet = synapsert.synapsert()
             
-            self.authorization = (self.test_info_dict['username'],'PooKlB2PnsmQUwx2oixQFdT7eozmVIns')
+            #self.authorization = (self.test_info_dict['username'],'PooKlB2PnsmQUwx2oixQFdT7eozmVIns')
             
             try:
                 resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'])
@@ -221,10 +230,37 @@ class qs_test(object):
             raise QSTError(fnfe)
         
     def __get_pass(self):
-        return
+        # get the token
+        key_file = "qsjira_key"
+        self.__cipher = get_fernet(key_file)
+        
+        # Extract the halo Password from the .qsjira_key
+        #    The password must also be decoded from "utf-8"
+        with open(self.qs_pass_file, 'rb') as pf:
+            self.__qsjira_password = self.__cipher.decrypt(pf.read()).decode()
+            logging.info("User Password found and extracted")
     
     def get_token(self):
-        return
+        if self.auth_url == None:
+            raise QSTError('Authentication URL not defined.')
+
+        if self.jira_user == None:
+            if self.prompt:
+                self.jira_user = input('Please enter Jira User name : ')
+
+            else:
+                raise QSTError('Jira User not defined.')
+
+        if not os.path.exists(self.qs_pass_file):
+            if self.prompt:
+                self.__jira_password = getpass.getpass(prompt='Enter Jira Password : ')
+            else:
+                raise QSTError('Jira Password file is missing.')
+        else:
+            self.__get_pass()
+
+        self.authorization = (self.jira_user, self.__qsjira_password )    # Name mangling qsjira_password - treated as private
+    
     
     def get_test_plan_info_srt(self):
         return
@@ -375,7 +411,7 @@ class qs_test(object):
         
         try:
             myTest.add_attachement_test_run(self.jira_url, self.authorization, str(runID), logpathname_srt)
-            if self.qt_log: logging.warning("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
+            if self.qt_log: logging.info("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
         except:
             if self.qt_log: logging.warning("> Error uploading attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
             sys.exit()
