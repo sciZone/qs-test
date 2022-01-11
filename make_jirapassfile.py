@@ -73,7 +73,7 @@ def write_fernet(jira_password):
 
 def main():
 
-    # Enter the pgpassword 
+    # Enter the Jira password 
     jirapassword = getpass.getpass('Please enter Jira Password : ')
 
     try:

@@ -39,7 +39,24 @@ def read(file_path):
         sys.exit(file_path+' not found')
     except:
         sys.exit('Error reading file '+file_path)    
+        
+        
+#
+# Have user select credentials OR to use Oauth1
+#
 
+while True:
+    try:
+        login_method = input('Select O(auth) or C(redentials):')
+        if login_method and ( login_method.upper()=='O' or login_method.upper()=='C'):
+            print("\n")
+            break
+        else:
+            print('--> INVALID Entry for the Login Method Type! Retry')
+            print("\n")
+    except ValueError:
+        if not input:
+            print('Error entering the Consumer Key') 
 
 print("STEP 1: Enter Consumer Key")
 # Step 1: Enter Consumer Key 
