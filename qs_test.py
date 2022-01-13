@@ -187,9 +187,9 @@ class qs_test(object):
             testSet = synapsert.synapsert()
             
             #self.authorization = (self.test_info_dict['username'],'PooKlB2PnsmQUwx2oixQFdT7eozmVIns')
-            
+
             try:
-                resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'],self.cert_file)
+                resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
             except:    #  If the authorization fails the function will fail
                 if self.qt_log: logging.warning("> INVALID USERNAME -> "+self.test_info_dict['username'])
                 sys.exit()

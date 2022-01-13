@@ -4,7 +4,7 @@
 Core Test Class for Jira Rest API Tool
 
 
-Copyright (c) 2018-2021, sci_Zone, Inc.
+Copyright (c) 2018-2022, sci_Zone, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ class jira_rest(object):
 #
 
     def api_request_get(self, url_api, authorization, verifyFile=False):
-        print('get '+verifyFile)
         try:
             resp = requests.get(url=url_api, auth=authorization, verify=verifyFile)
             return resp
@@ -65,7 +64,6 @@ class jira_rest(object):
 #
  
     def api_request_post(self, url_api, data_api, authorization, verifyFile=False):
-        print('post '+verifyFile)
 
         try:
             headers={
@@ -89,7 +87,6 @@ class jira_rest(object):
 #
  
     def api_request_post_upload_file(self, url_api, file_path_info, authorization, verifyFile=False):
-        print('upload '+verifyFile)
 
 
         content_type, encoding = mimetypes.guess_type(file_path_info)
@@ -118,7 +115,6 @@ class jira_rest(object):
 #
  
     def api_request_put(self, url_api, data_api, authorization, verifyFile=False):
-        print('put '+verifyFile)
 
         try:
             headers={
@@ -142,7 +138,6 @@ class jira_rest(object):
 #
  
     def api_request_delete(self, url_api, data_api, authorization, verifyFile=False):
-        print('delete '+verifyFile)
 
         try:
             headers={

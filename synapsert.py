@@ -54,10 +54,10 @@ class synapsert(object):
 # Get all test cycles for a given test plan
 #
     def get_test_cycles(self,host_url, authorization, test_plan_key, cert_file):
-        
+            
             heyJira = jira_rest_api.jira_rest()
             cycles_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycles'
-            resp_rest = heyJira.api_request_get(cycles_rest_api, authorization, cert_file)
+            resp_rest = heyJira.api_request_get(cycles_rest_api, authorization)
             respj = resp_rest.json()
 
             return resp_rest, respj
