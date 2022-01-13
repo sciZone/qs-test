@@ -6,6 +6,7 @@ ENV_CONFIG={
     'QS_URL': 'https://www.quick-sat.com',
     'JIRA_URL': 'http://localhost:8080',
     'JIRA_USER': 'auser',
+    'CERT_FILE': False,
     'QT_SYNAPSERT': True,
     'QT_LOG': True,
     'QT_LOG_APPEND': False,

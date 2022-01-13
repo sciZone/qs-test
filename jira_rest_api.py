@@ -45,9 +45,10 @@ class jira_rest(object):
 #   Function manages GET REST APIs
 #
 
-    def api_request_get(self, url_api, authorization):
+    def api_request_get(self, url_api, authorization, verifyFile=False):
+        print('get '+verifyFile)
         try:
-            resp = requests.get(url=url_api, auth=authorization)
+            resp = requests.get(url=url_api, auth=authorization, verify=verifyFile)
             return resp
             
         except requests.exceptions.HTTPError as errh:
@@ -63,13 +64,15 @@ class jira_rest(object):
 #   Function manages POST REST APIs
 #
  
-    def api_request_post(self, url_api, data_api, authorization):
+    def api_request_post(self, url_api, data_api, authorization, verifyFile=False):
+        print('post '+verifyFile)
+
         try:
             headers={
                 'Content-type':'application/json', 
                 'Accept':'application/json'
             }
-            resp = requests.post(url=url_api, headers=headers, json=data_api, auth=authorization)
+            resp = requests.post(url=url_api, headers=headers, json=data_api, auth=authorization, verify=verifyFile)
             return resp
             
         except requests.exceptions.HTTPError as errh:
@@ -85,7 +88,10 @@ class jira_rest(object):
 #   Function manages POST REST APIs specific to uploading a file
 #
  
-    def api_request_post_upload_file(self, url_api, file_path_info, authorization):
+    def api_request_post_upload_file(self, url_api, file_path_info, authorization, verifyFile=False):
+        print('upload '+verifyFile)
+
+
         content_type, encoding = mimetypes.guess_type(file_path_info)
         if content_type is None:
             content_type = 'multipart/form-data'
@@ -94,7 +100,7 @@ class jira_rest(object):
             headers={'X-Atlassian-Token': 'no-check'}
             files={'file': (file_path_info, open(file_path_info, 'rb'), content_type)}
             
-            resp = requests.post(url=url_api, headers=headers, files=files, auth=authorization)
+            resp = requests.post(url=url_api, headers=headers, files=files, auth=authorization, verify=verifyFile)
             return resp
             
         except requests.exceptions.HTTPError as errh:
@@ -111,13 +117,15 @@ class jira_rest(object):
 #   Function manages PUT REST APIs
 #
  
-    def api_request_put(self, url_api, data_api, authorization):
+    def api_request_put(self, url_api, data_api, authorization, verifyFile=False):
+        print('put '+verifyFile)
+
         try:
             headers={
                 'Content-type':'application/json', 
                 'Accept':'application/json'
             }
-            resp = requests.put(url=url_api, headers=headers, json=data_api, auth=authorization)
+            resp = requests.put(url=url_api, headers=headers, json=data_api, auth=authorization, verify=verifyFile)
             return resp
             
         except requests.exceptions.HTTPError as errh:
@@ -133,13 +141,15 @@ class jira_rest(object):
 #   Function manages DELETE REST APIs
 #
  
-    def api_request_delete(self, url_api, data_api, authorization):
+    def api_request_delete(self, url_api, data_api, authorization, verifyFile=False):
+        print('delete '+verifyFile)
+
         try:
             headers={
                 'Content-type':'application/json', 
                 'Accept':'application/json'
             }
-            resp = requests.delete(url=url_api, headers=headers, json=data_api, auth=authorization)
+            resp = requests.delete(url=url_api, headers=headers, json=data_api, auth=authorization, verify=verifyFile)
             return resp
             
         except requests.exceptions.HTTPError as errh:

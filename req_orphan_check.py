@@ -26,6 +26,7 @@ import base64
 import importlib
 import urllib
 import requests
+import getpass
 from oauthlib.oauth1 import SIGNATURE_RSA
 from requests_oauthlib import OAuth1Session
 from jira.client import JIRA
@@ -58,21 +59,40 @@ while True:
         if not input:
             print('Error entering the Consumer Key') 
 
-print("STEP 1: Enter Consumer Key")
-# Step 1: Enter Consumer Key 
-while True:
-    try:
-        CONSUMER_KEY = input('Enter the Consumer Key: ')
-        if CONSUMER_KEY:
-            print("\n")
-            break
-        else:
-            print('--> NO Entry for the Consumer Key! Retry')
-            print("\n")
-    except ValueError:
-        if not input:
-            print('Error entering the Consumer Key') 
-
+if login_method.upper() == 'O':
+    print("STEP 1: Enter Consumer Key")
+    # Step 1: Enter Consumer Key 
+    while True:
+        try:
+            CONSUMER_KEY = input('Enter the Consumer Key: ')
+            if CONSUMER_KEY:
+                print("\n")
+                break
+            else:
+                print('--> NO Entry for the Consumer Key! Retry')
+                print("\n")
+        except ValueError:
+            if not input:
+                print('Error entering the Consumer Key') 
+                
+else:
+    print('STEP 1: Enter Jira User Credentials')
+    # Step 1: Enter the user credentials
+    while True:
+        try:
+            jirausername = input('Enter your Jira Username:')
+            if jirausername:
+                print("\n")
+                break
+            else:
+                print('--> NO Entry for the UserName! Retry')
+                print("\n")
+        except ValueError:
+            if not input:
+                print('Error entering the Jira Username') 
+    
+    # Enter the Jira password 
+    jirapassword = getpass.getpass('Please enter Jira Password : ')
 
 #JIRA_SERVER = 'http://jira.quick-sat.com'
 #RSA_KEY_FILE = 'jira_privatekey.pem'

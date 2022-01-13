@@ -53,11 +53,11 @@ class synapsert(object):
 #
 # Get all test cycles for a given test plan
 #
-    def get_test_cycles(self,host_url, authorization, test_plan_key):
+    def get_test_cycles(self,host_url, authorization, test_plan_key, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             cycles_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycles'
-            resp_rest = heyJira.api_request_get(cycles_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(cycles_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -65,11 +65,11 @@ class synapsert(object):
 #
 # Get all test cases for a test plan
 #
-    def get_test_cases(self,host_url, authorization, test_plan_key):
+    def get_test_cases(self,host_url, authorization, test_plan_key, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_plans_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/members'
-            resp_rest = heyJira.api_request_get(test_plans_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(test_plans_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -77,11 +77,11 @@ class synapsert(object):
 #
 # Get all test run details for a test plan
 #
-    def get_run_details_cases(self,host_url, authorization, test_plan_key):
+    def get_run_details_cases(self,host_url, authorization, test_plan_key, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_run_details_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/testPlanInformation'
-            resp_rest = heyJira.api_request_get(test_run_details_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(test_run_details_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -89,11 +89,11 @@ class synapsert(object):
 #
 # Get all defects for a test plan
 #
-    def get_defects_plan(self,host_url, authorization, test_plan_key):
+    def get_defects_plan(self,host_url, authorization, test_plan_key, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_plan_defects_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/defects'
-            resp_rest = heyJira.api_request_get(test_plan_defects_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(test_plan_defects_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -108,11 +108,11 @@ class synapsert(object):
 #	}
 
 
-    def post_test_to_plan(self,host_url, authorization, test_plan_key, data_api):
+    def post_test_to_plan(self,host_url, authorization, test_plan_key, data_api, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_to_plan_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/addMembers'
-            resp_rest = heyJira.api_request_post(test_to_plan_rest_api, data_api, authorization)
+            resp_rest = heyJira.api_request_post(test_to_plan_rest_api, data_api, authorization, cert_file)
 
             return resp_rest
 
@@ -137,12 +137,12 @@ class synapsert(object):
 #		- Resume
 #
 #
-    def update_test_cycle(self,host_url, authorization, test_plan_key, cycleName, action):
+    def update_test_cycle(self,host_url, authorization, test_plan_key, cycleName, action, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_cycle_update_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleName+'/wf/'+action
             data_api = {}
-            resp_rest = heyJira.api_request_put(test_cycle_update_rest_api, data_api, authorization)
+            resp_rest = heyJira.api_request_put(test_cycle_update_rest_api, data_api, authorization, cert_file)
 
             return resp_rest
             
@@ -162,11 +162,11 @@ class synapsert(object):
 #	}
 #
 
-    def update_test_cycle_details(self,host_url, authorization, test_plan_key, test_cycle_details):
+    def update_test_cycle_details(self,host_url, authorization, test_plan_key, test_cycle_details, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_cycle_update_details_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/editCycle/'
-            resp_rest = heyJira.api_request_post(test_cycle_update_details_rest_api, test_cycle_details, authorization)
+            resp_rest = heyJira.api_request_post(test_cycle_update_details_rest_api, test_cycle_details, authorization, cert_file)
 
             return resp_rest
 
@@ -175,11 +175,11 @@ class synapsert(object):
 #     Get Test Runs in a test cycle
 #
 
-    def get_test_runs(self,host_url, authorization, test_plan_key, cycleName):
+    def get_test_runs(self,host_url, authorization, test_plan_key, cycleName, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_runs_cycle_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleName+'/testRuns'
-            resp_rest = heyJira.api_request_get(test_runs_cycle_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(test_runs_cycle_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -189,11 +189,11 @@ class synapsert(object):
 #     Get Test Runs in a test cycle by Cycle ID
 #
 
-    def get_test_runs_by_id(self,host_url, authorization, test_plan_key, cycleId):
+    def get_test_runs_by_id(self,host_url, authorization, test_plan_key, cycleId, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_runs_cycle_id_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleId+'/testRunsByCycleId'
-            resp_rest = heyJira.api_request_get(test_runs_cycle_id_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(test_runs_cycle_id_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -211,11 +211,11 @@ class synapsert(object):
 #     Get Defects from a Test Cycle
 #
 
-    def get_cycle_defects_by_id(self,host_url, authorization, test_plan_key, cycleId):
+    def get_cycle_defects_by_id(self,host_url, authorization, test_plan_key, cycleId, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             defects_cycle_id_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleId+'/defects'
-            resp_rest = heyJira.api_request_get(defects_cycle_id_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(defects_cycle_id_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -229,10 +229,10 @@ class synapsert(object):
 #
 #	Get Test Run Details
 #
-    def get_test_run_details(self,host_url, authorization, run_id):
+    def get_test_run_details(self,host_url, authorization, run_id, cert_file):
             heyJira = jira_rest_api.jira_rest()
             test_run_res_rest_api = host_url+'/rest/synapse/latest/public/testRun/'+run_id
-            resp_rest = heyJira.api_request_get(test_run_res_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(test_run_res_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -250,11 +250,11 @@ class synapsert(object):
 #
 #  Valid Results: Passed, Failed, Blocked, Not Tested, NA
 
-    def update_test_run(self,host_url, authorization, test_plan_key, cycleName, test_run_data):
+    def update_test_run(self,host_url, authorization, test_plan_key, cycleName, test_run_data, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_run_update_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleName+'/updateTestRun'
-            resp_rest = heyJira.api_request_post(test_run_update_rest_api, test_run_data, authorization)
+            resp_rest = heyJira.api_request_post(test_run_update_rest_api, test_run_data, authorization, cert_file)
 
             return resp_rest
 
@@ -267,11 +267,11 @@ class synapsert(object):
 # }
 
 
-    def update_test_run_step(self,host_url, authorization, runID, test_run_data):
+    def update_test_run_step(self,host_url, authorization, runID, test_run_data, cert_file):
         
             heyJira = jira_rest_api.jira_rest()
             test_run_update__step_rest_api = host_url+'/rest/synapse/latest/public/testRun/updateStep/'+runID
-            resp_rest = heyJira.api_request_post(test_run_update__step_rest_api, test_run_data, authorization)
+            resp_rest = heyJira.api_request_post(test_run_update__step_rest_api, test_run_data, authorization, cert_file)
 
             return resp_rest
 
@@ -285,11 +285,11 @@ class synapsert(object):
 # 	"runId":"3174", "result":"Failed", "comment":"Updated through REST API", "bugs":["FRS-24"]
 # }
 
-    def update_test_run_results(self, host_url, authorization, test_run_data):
+    def update_test_run_results(self, host_url, authorization, test_run_data, cert_file):
    
             heyJira = jira_rest_api.jira_rest()
             test_run_results_update_rest_api = host_url+'/rest/synapse/latest/public/testRun/update'
-            resp_rest = heyJira.api_request_post(test_run_results_update_rest_api, test_run_data, authorization)
+            resp_rest = heyJira.api_request_post(test_run_results_update_rest_api, test_run_data, authorization, cert_file)
 
             return resp_rest
          
@@ -297,11 +297,11 @@ class synapsert(object):
 #   Add Attachments to Test Run
 #
 
-    def add_attachement_test_run(self, host_url, authorization, runID, file_path_info):
+    def add_attachement_test_run(self, host_url, authorization, runID, file_path_info, cert_file):
    
             heyJira = jira_rest_api.jira_rest()
             test_run_results_update_rest_api = host_url+'/rest/synapse/latest/public/attachment/'+runID+'/testrun'
-            resp_rest = heyJira.api_request_post_upload_file(test_run_results_update_rest_api, file_path_info, authorization)
+            resp_rest = heyJira.api_request_post_upload_file(test_run_results_update_rest_api, file_path_info, authorization, cert_file)
 
             return resp_rest
  
@@ -309,10 +309,10 @@ class synapsert(object):
 #    Get Attachment Details from a Test Run
 #
 
-    def get_attachment_details_test_run(self,host_url, authorization, run_id):
+    def get_attachment_details_test_run(self,host_url, authorization, run_id, cert_file):
             heyJira = jira_rest_api.jira_rest()
             test_run_attachement_details_api = host_url+'/rest/synapse/latest/public/attachment/'+run_id+'/getAttachmentDetails'
-            resp_rest = heyJira.api_request_get(test_run_attachement_details_api, authorization)
+            resp_rest = heyJira.api_request_get(test_run_attachement_details_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -321,10 +321,10 @@ class synapsert(object):
 # Delete Attachment from a Test Run
 #
 
-    def delete_attachement_TestRun(self,host_url, authorization, runID, attachmentID):
+    def delete_attachement_TestRun(self,host_url, authorization, runID, attachmentID, cert_file):
             heyJira = jira_rest_api.jira_rest()
             delete_attachement_runId_rest_api = host_url+'/rest/synapse/latest/public/attachment/'+runID+'/deleteAttachment/'+attachmentID
-            resp_rest = heyJira.api_request_delete(delete_attachement_runId_rest_api, '{}', authorization)
+            resp_rest = heyJira.api_request_delete(delete_attachement_runId_rest_api, '{}', authorization, cert_file)
 
             return resp_rest
 
@@ -349,21 +349,21 @@ class synapsert(object):
 #   }
 #  ]
 
-    def add_test_case_step_results(self, host_url, authorization, testCaseIssueKey, test_case_step_data):
+    def add_test_case_step_results(self, host_url, authorization, testCaseIssueKey, test_case_step_data, cert_file):
    
             heyJira = jira_rest_api.jira_rest()
             test_case_add_step_rest_api = host_url+'/rest/synapse/latest/public/testCase/'+testCaseIssueKey+'/addSteps'
-            resp_rest = heyJira.api_request_post(test_case_add_step_rest_api, test_case_step_data, authorization)
+            resp_rest = heyJira.api_request_post(test_case_add_step_rest_api, test_case_step_data, authorization, cert_file)
 
             return resp_rest
             
 #
 #	Get Test Steps from a Test Case
 #
-    def get_steps_test_case(self,host_url, authorization, testCaseIssueKey):
+    def get_steps_test_case(self,host_url, authorization, testCaseIssueKey, cert_file):
             heyJira = jira_rest_api.jira_rest()
             get_test_case_steps_rest_api = host_url+'/rest/synapse/latest/public/testCase/'+testCaseIssueKey+'/steps'
-            resp_rest = heyJira.api_request_get(get_test_case_steps_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(get_test_case_steps_rest_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -374,10 +374,10 @@ class synapsert(object):
 #
 
 
-    def delete_step_by_id(self,host_url, authorization, testCaseIssueKey, stepID):
+    def delete_step_by_id(self,host_url, authorization, testCaseIssueKey, stepID, cert_file):
             heyJira = jira_rest_api.jira_rest()
             delete_step_by_id_rest_api = host_url+'/rest/synapse/latest/public/testCase/'+testCaseIssueKey+'/deleteStep/'+stepID
-            resp_rest = heyJira.api_request_delete(delete_step_by_id_rest_api, '{}', authorization)
+            resp_rest = heyJira.api_request_delete(delete_step_by_id_rest_api, '{}', authorization, cert_file)
 
             return resp_rest
             
@@ -387,10 +387,10 @@ class synapsert(object):
 #  Delete Test Step from Test Case with sequenceNumber
 #
 
-    def delete_step_by_No(self,host_url, authorization, testCaseIssueKey, stepNo):
+    def delete_step_by_No(self,host_url, authorization, testCaseIssueKey, stepNo, cert_file):
             heyJira = jira_rest_api.jira_rest()
             delete_step_by_stepNo_rest_api = host_url+'/rest/synapse/latest/public/testCase/'+testCaseIssueKey+'/deleteStepBySequenceNo/'+stepNo
-            resp_rest = heyJira.api_request_delete(delete_step_by_stepNo_rest_api, '{}', authorization)
+            resp_rest = heyJira.api_request_delete(delete_step_by_stepNo_rest_api, '{}', authorization, cert_file)
 
             return resp_rest
             
@@ -407,11 +407,10 @@ class synapsert(object):
 
 #
 
-    def get_all_child_requirements(self,host_url, authorization, requirementIssueKey):
+    def get_all_child_requirements(self,host_url, authorization, requirementIssueKey, cert_file):
             heyJira = jira_rest_api.jira_rest()
             get_all_child_req = host_url+'/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/getChildren'
-            print(get_all_child_req)
-            resp_rest = heyJira.api_request_get(get_all_child_req, authorization)
+            resp_rest = heyJira.api_request_get(get_all_child_req, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj
@@ -421,12 +420,10 @@ class synapsert(object):
 #
 
 
-    def get_immediate_child_requirements(self,host_url, authorization, requirementIssueKey):
+    def get_immediate_child_requirements(self,host_url, authorization, requirementIssueKey, cert_file):
             heyJira = jira_rest_api.jira_rest()
             get_child_req_api = host_url+'/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/getOnlyImmediateChildren'
-            print(get_child_req_api)
-            resp_rest = heyJira.api_request_get(get_child_req_api, authorization)
-            print(resp_rest)
+            resp_rest = heyJira.api_request_get(get_child_req_api, authorization, cert_file)
             respj = resp_rest.json()
 
             return resp_rest, respj

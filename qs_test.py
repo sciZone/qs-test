@@ -137,6 +137,7 @@ class qs_test(object):
         self.qs_url = config.ENV_CONFIG.get('QS_URL', None)
         self.jira_url = config.ENV_CONFIG.get('JIRA_URL', None)
         self.jira_user = config.ENV_CONFIG.get('JIRA_USER', None)
+        self.cert_file = config.ENV_CONFIG.get('CERT_FILE', None)
         self.qt_synapsert = config.ENV_CONFIG.get('QT_SYNAPSERT', False)
         self.qt_log = config.ENV_CONFIG.get('QT_LOG', False)
         self.qt_log_append = config.ENV_CONFIG.get('QT_LOG_APPEND', False)
@@ -188,7 +189,7 @@ class qs_test(object):
             #self.authorization = (self.test_info_dict['username'],'PooKlB2PnsmQUwx2oixQFdT7eozmVIns')
             
             try:
-                resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'])
+                resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'],self.cert_file)
             except:    #  If the authorization fails the function will fail
                 if self.qt_log: logging.warning("> INVALID USERNAME -> "+self.test_info_dict['username'])
                 sys.exit()
@@ -273,7 +274,7 @@ class qs_test(object):
         #
                         
         try:
-            resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'])
+            resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
         except:    #  If the authorization fails the function will fail
             if self.qt_log: logging.warning("Function qst_result_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
             sys.exit()
@@ -307,7 +308,7 @@ class qs_test(object):
         if result_srt in result_set:
         
             test_run_data = { "testcaseKey":testcase_srt, "result":result_srt,  "comment":comment_srt }
-            resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data)
+            resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data, self.cert_file)
             if self.qt_log: logging.info("Result: "+result_srt+" > Comment: "+comment_srt)
             if self.qt_log: logging.info("-----------------------------")
             
@@ -325,7 +326,7 @@ class qs_test(object):
         #
                         
         try:
-            resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'])
+            resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
         except:    #  If the authorization fails the function will fail
             if self.qt_log: logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
             sys.exit()
@@ -359,14 +360,14 @@ class qs_test(object):
         if jsonE == jsonA:
         
             test_run_data = { "testcaseKey":testcase_srt, "result": 'Passed',  "comment": msg_pass }
-            resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data)
+            resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data, self.cert_file)
             if self.qt_log: logging.info("Result: Passed...Comment: "+msg_pass)
             if self.qt_log: logging.info("-----------------------------")
             
         else:    # jsonA does not equal jsonE, test failed
         
             test_run_data = { "testcaseKey":testcase_srt, "result": 'Failed',  "comment": msg_fail + ' Actual: '+jsonA+ ';  Expected: '+jsonE }
-            resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data)
+            resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data, self.cert_file)
             if self.qt_log: logging.info("Result: Failed...Comment: "+ msg_fail + " -> Actual: " + jsonA + ";  Expected: " + jsonE)
             if self.qt_log: logging.info("-----------------------------")
 
@@ -380,7 +381,7 @@ class qs_test(object):
         #
                         
         try:
-            resp, respj = myTest.get_test_runs(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'])
+            resp, respj = myTest.get_test_runs(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], self.cert_file)
         except:    #  If the authorization fails the function will fail
             if self.qt_log: logging.warning("Function qst_store_log_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
             sys.exit()
@@ -410,7 +411,7 @@ class qs_test(object):
         #
         
         try:
-            myTest.add_attachement_test_run(self.jira_url, self.authorization, str(runID), logpathname_srt)
+            myTest.add_attachement_test_run(self.jira_url, self.authorization, str(runID), logpathname_srt, self.cert_file)
             if self.qt_log: logging.info("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
         except:
             if self.qt_log: logging.warning("> Error uploading attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
