@@ -82,35 +82,35 @@ def logfile_archive():
 #
 #   remove oldest archived file, copy second oldest to replace.
 #
-    if os.path.exists("qs_test_results_3.log"):
-        os.remove("qs_test_results_3.log")
+    if os.path.exists("log/qs_test_results_3.log"):
+        os.remove("log/qs_test_results_3.log")
         
-    if os.path.exists("qs_test_results_2.log"):
-        os.rename("qs_test_results_2.log","qs_test_results_3.log")
+    if os.path.exists("log/qs_test_results_2.log"):
+        os.rename("log/qs_test_results_2.log","log/qs_test_results_3.log")
             
 #
 #   remove _2.log file, copy _1.log to replace _2.log.
 #
-    if os.path.exists("qs_test_results_2.log"):
-        os.remove("qs_test_results_2.log")
+    if os.path.exists("log/qs_test_results_2.log"):
+        os.remove("log/qs_test_results_2.log")
         
-    if os.path.exists("qs_test_results_1.log"):
-        os.rename("qs_test_results_1.log","qs_test_results_2.log")
+    if os.path.exists("log/qs_test_results_1.log"):
+        os.rename("log/qs_test_results_1.log","log/qs_test_results_2.log")
          
 #
 #   remove _1.log file, copy qs_test_results.log to replace _1.log.
 #
-    if os.path.exists("qs_test_results_1.log"):
-        os.remove("qs_test_results_1.log")
+    if os.path.exists("log/qs_test_results_1.log"):
+        os.remove("log/qs_test_results_1.log")
         
-    if os.path.exists("qs_test_results.log"):
-        os.rename("qs_test_results.log","qs_test_results_1.log")
+    if os.path.exists("log/qs_test_results.log"):
+        os.rename("log/qs_test_results.log","qlog/s_test_results_1.log")
 #
 #   remove qs_test_results.log
 #
 
-        if os.path.exists("qs_test_results.log"):
-            os.remove("qs_test_results.log")
+        if os.path.exists("log/qs_test_results.log"):
+            os.remove("log/qs_test_results.log")
 
 
 
@@ -158,10 +158,10 @@ class qs_test(object):
             #  If appending
             if self.qt_log_append:
                 # Log all but "debug" messages to the halo_db_migrate.log file
-                logging.basicConfig(filename='qs_test_results.log',level=logging.INFO)
+                logging.basicConfig(filename='log/qs_test_results.log',level=logging.INFO)
             else:
                 logfile_archive()
-                logging.basicConfig(filename='qs_test_results.log',level=logging.INFO)
+                logging.basicConfig(filename='log/qs_test_results.log',level=logging.INFO)
             
             dt = str(datetime.datetime.now())
             logging.info("------ Start Testing: "+dt)
@@ -186,8 +186,6 @@ class qs_test(object):
             #   then the Test Plan does not exist and report the error
             testSet = synapsert.synapsert()
             
-            #self.authorization = (self.test_info_dict['username'],'PooKlB2PnsmQUwx2oixQFdT7eozmVIns')
-
             try:
                 resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
             except:    #  If the authorization fails the function will fail
