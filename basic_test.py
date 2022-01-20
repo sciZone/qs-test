@@ -20,6 +20,7 @@ import datetime
 import logging
 import argparse
 import configparser
+import certifi
 
 # Fernet is a system for symmetric encryption/decryption
 
@@ -59,8 +60,21 @@ def parse_args():
 
 def init_logging():
     timestamp = datetime.datetime.now().strftime("Run_%Y_%m_%d_%H_%M_%S")
-    logging.basicConfig(filename='log/'+timestamp, encoding='utf-8', level=logging.DEBUG)
-    logging.debug('Begin logging')
+    #logging.basicConfig(filename='log/'+timestamp, encoding='utf-8', level=logging.DEBUG)
+    #logging.debug('Begin logging')
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('log/'+timestamp)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
+    fh.setLevel(logging.DEBUG)
+    fh.setFormatter(formatter)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    ch.setFormatter(formatter)
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+    logger.info('Begin logging')
+    return logger
 
 class qs_test_config():
     def __init__(self, config):
@@ -112,7 +126,7 @@ def __get_pass(qt_config):
     #    The password must also be decoded from "utf-8"
     with open(qt_config.qs_pass_file, 'rb') as pf:
         __qsjira_password = __cipher.decrypt(pf.read()).decode()
-        logging.info("User Password found and extracted")
+        logging.getLogger(__name__).info("User Password found and extracted")
         return __qsjira_password
 
 def get_token(qt_config):
@@ -130,16 +144,33 @@ def get_token(qt_config):
         return (qt_config.jira_user, qsjira_password )    # Name mangling qsjira_password - treated as private
     
 def main_loop():
-    init_logging()
+    logger = init_logging()
     qt_config = init_config()
-    authorization = get_token(qt_config)
+    auth = get_token(qt_config)
     jira = jira_rest_api.jira_rest()
+    cert = '/etc/ssl/certs/ca-bundle.crt'
+
+    # attempt to get the list of cycles in the VSMFSW-2267 test plan
     try:
         url = qt_config.jira_url + '/rest/synapse/latest/public/testPLan' + 'VSMFSW-2267' + '/cycles'
-        resp = jira.api_request_get(qt_config.jira_url, authorization)
+        logger.debug("GET url_api='" + str(url) + "', authorization=auth, verifyFile='" + cert + "'")
+        response = jira.api_request_get(url_api=qt_config.jira_url, authorization=auth, verifyFile=cert)
+        response.raise_for_status()  # raises exception when not a 2xx response
+        if response.status_code != 204:
+            logger.info(response)
     except Exception as e:
-        print(e)
+        logger.error(e)
 
+    #attempt to add 'test2' as a cycle in the VSMFSW-2267 test plan
+    try:
+        url = qt_config.jira_url + '/rest/synapse/latest/public/testPlan/' + 'VSMFSW-2267' + '/addCycle'
+        logger.debug("POST url_api='" + str(url) + "', authorization=auth, verifyFile='" + cert + "'")
+        json_data = {"name":"test2","environment":"Firefox","build":"build 1.0","plannedStartDate":"2022-01-22","plannedEndDate":"2022-01-23"}
+        response = jira.api_request_post(url_api=qt_config.jira_url, data_api=json_data, authorization=auth, verifyFile=cert)
+        if response.status_code != 204:
+            logger.info(response)
+    except Exception as e:
+        logger.error(e)
 
 
 if __name__ == '__main__':
