@@ -21,6 +21,7 @@ import logging
 import argparse
 import configparser
 import certifi
+import importlib
 
 # Fernet is a system for symmetric encryption/decryption
 
@@ -110,7 +111,7 @@ def init_config():
         #  Read the configuration information specific to the QuickSAT Environment
         sys.path.append("config")
         #config = __import__(f'config.{args.config}', fromlist=['ENV_CONFIG', 'DATABASE_CONFIG'])
-        import qs_emily as config
+        config = importlib.import_module(args.config)
 
         result = qs_test_config(config)
         #result = (auth_url, qs_url, jira_url, jira_user, cert_file, qt_synapsert, qt_log, qt_log_append, qs_user, qs_pass_file)
@@ -148,13 +149,12 @@ def main_loop():
     qt_config = init_config()
     auth = get_token(qt_config)
     jira = jira_rest_api.jira_rest()
-    cert = '/etc/ssl/certs/ca-bundle.crt'
 
     # attempt to get the list of cycles in the VSMFSW-2267 test plan
     try:
         url = qt_config.jira_url + '/rest/synapse/latest/public/testPLan' + 'VSMFSW-2267' + '/cycles'
-        logger.debug("GET url_api='" + str(url) + "', authorization=auth, verifyFile='" + cert + "'")
-        response = jira.api_request_get(url_api=qt_config.jira_url, authorization=auth, verifyFile=cert)
+        logger.debug("GET url_api='" + str(url) + "', authorization=auth, verifyFile='" + str(qt_config.cert_file) + "'")
+        response = jira.api_request_get(url_api=qt_config.jira_url, authorization=auth, verifyFile=qt_config.cert_file)
         response.raise_for_status()  # raises exception when not a 2xx response
         if response.status_code != 204:
             logger.info(response)
@@ -164,9 +164,9 @@ def main_loop():
     #attempt to add 'test2' as a cycle in the VSMFSW-2267 test plan
     try:
         url = qt_config.jira_url + '/rest/synapse/latest/public/testPlan/' + 'VSMFSW-2267' + '/addCycle'
-        logger.debug("POST url_api='" + str(url) + "', authorization=auth, verifyFile='" + cert + "'")
+        logger.debug("POST url_api='" + str(url) + "', authorization=auth, verifyFile='" + str(qt_config.cert_file) + "'")
         json_data = {"name":"test2","environment":"Firefox","build":"build 1.0","plannedStartDate":"2022-01-22","plannedEndDate":"2022-01-23"}
-        response = jira.api_request_post(url_api=qt_config.jira_url, data_api=json_data, authorization=auth, verifyFile=cert)
+        response = jira.api_request_post(url_api=qt_config.jira_url, data_api=json_data, authorization=auth, verifyFile=qt_config.cert_file)
         if response.status_code != 204:
             logger.info(response)
     except Exception as e:
