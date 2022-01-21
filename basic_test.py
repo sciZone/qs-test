@@ -152,7 +152,7 @@ def main_loop():
 
     # attempt to get the list of cycles in the VSMFSW-2267 test plan
     try:
-        url = qt_config.jira_url + '/rest/synapse/latest/public/testPLan' + 'VSMFSW-2267' + '/cycles'
+        url = qt_config.jira_url + '/rest/synapse/latest/public/testPlan/' + 'VSMFSW-2267' + '/cycles'
         logger.debug("GET url_api='" + str(url) + "', authorization=auth, verifyFile='" + str(qt_config.cert_file) + "'")
         response = jira.api_request_get(url_api=qt_config.jira_url, authorization=auth, verifyFile=qt_config.cert_file)
         response.raise_for_status()  # raises exception when not a 2xx response
