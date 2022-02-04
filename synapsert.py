@@ -58,9 +58,14 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             cycles_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycles'
             resp_rest = heyJira.api_request_get(cycles_rest_api, authorization)
-            respj = resp_rest.json()
+            
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
 
-            return resp_rest, respj
+
             
 #
 # Get all test cases for a test plan
@@ -70,9 +75,13 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             test_plans_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/members'
             resp_rest = heyJira.api_request_get(test_plans_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
+            
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
 
-            return resp_rest, respj
 
 #
 # Get all test run details for a test plan
@@ -82,9 +91,13 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             test_run_details_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/testPlanInformation'
             resp_rest = heyJira.api_request_get(test_run_details_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
+            
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
 
-            return resp_rest, respj
 
 #
 # Get all defects for a test plan
@@ -94,9 +107,13 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             test_plan_defects_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/defects'
             resp_rest = heyJira.api_request_get(test_plan_defects_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
+
 
 #
 # ADD Test Case(s) to Test Plan
@@ -180,9 +197,12 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             test_runs_cycle_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleName+'/testRuns'
             resp_rest = heyJira.api_request_get(test_runs_cycle_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
 
 
 #
@@ -194,9 +214,13 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             test_runs_cycle_id_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleId+'/testRunsByCycleId'
             resp_rest = heyJira.api_request_get(test_runs_cycle_id_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
+
             
 #
 #     Add/Remove Test Cases from Test Cycle
@@ -216,9 +240,13 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             defects_cycle_id_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleId+'/defects'
             resp_rest = heyJira.api_request_get(defects_cycle_id_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
+
 
 
 # -----------------------------------------------------------------------------------
@@ -233,9 +261,12 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             test_run_res_rest_api = host_url+'/rest/synapse/latest/public/testRun/'+run_id
             resp_rest = heyJira.api_request_get(test_run_res_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
 
 
 #
@@ -364,9 +395,12 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             get_test_case_steps_rest_api = host_url+'/rest/synapse/latest/public/testCase/'+testCaseIssueKey+'/steps'
             resp_rest = heyJira.api_request_get(get_test_case_steps_rest_api, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
             
             
 #
@@ -411,9 +445,13 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             get_all_child_req = host_url+'/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/getChildren'
             resp_rest = heyJira.api_request_get(get_all_child_req, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
+
 
 #
 #	Get Immediate Child Requirements from a Requirement
@@ -424,7 +462,11 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             get_child_req_api = host_url+'/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/getOnlyImmediateChildren'
             resp_rest = heyJira.api_request_get(get_child_req_api, authorization, cert_file)
-            respj = resp_rest.json()
 
-            return resp_rest, respj
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
+
 
