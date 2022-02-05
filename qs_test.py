@@ -77,42 +77,24 @@ def parse_args():
     return parser.parse_args()
 
 
-def logfile_archive():
-
-#
-#   remove oldest archived file, copy second oldest to replace.
-#
-    if os.path.exists("log/qs_test_results_3.log"):
-        os.remove("log/qs_test_results_3.log")
+def init_logging(displayLog):
+    timestamp = datetime.datetime.now().strftime("QST_Run_%Y_%m_%d_%H_%M_%S")
+    
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    fh = logging.FileHandler('log/'+timestamp)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(formatter)
+    if displayLog:
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
         
-    if os.path.exists("log/qs_test_results_2.log"):
-        os.rename("log/qs_test_results_2.log","log/qs_test_results_3.log")
-            
-#
-#   remove _2.log file, copy _1.log to replace _2.log.
-#
-    if os.path.exists("log/qs_test_results_2.log"):
-        os.remove("log/qs_test_results_2.log")
-        
-    if os.path.exists("log/qs_test_results_1.log"):
-        os.rename("log/qs_test_results_1.log","log/qs_test_results_2.log")
-         
-#
-#   remove _1.log file, copy qs_test_results.log to replace _1.log.
-#
-    if os.path.exists("log/qs_test_results_1.log"):
-        os.remove("log/qs_test_results_1.log")
-        
-    if os.path.exists("log/qs_test_results.log"):
-        os.rename("log/qs_test_results.log","qlog/s_test_results_1.log")
-#
-#   remove qs_test_results.log
-#
-
-        if os.path.exists("log/qs_test_results.log"):
-            os.remove("log/qs_test_results.log")
-
-
+    logger.addHandler(fh)
+    logger.info('Begin logging test run')
+    return logger
 
 #   
 #    Exception Class for qs_test class of functions
@@ -140,6 +122,7 @@ class qs_test(object):
         self.cert_file = config.ENV_CONFIG.get('CERT_FILE', None)
         self.qt_synapsert = config.ENV_CONFIG.get('QT_SYNAPSERT', False)
         self.qt_log = config.ENV_CONFIG.get('QT_LOG', False)
+        self.qt_log_display = config.ENV_CONFIG.get('QT_LOG_DISPLAY', False)
         self.qt_log_append = config.ENV_CONFIG.get('QT_LOG_APPEND', False)
         self.qs_user = config.ENV_CONFIG.get('QS_USER', None)
         
@@ -154,17 +137,10 @@ class qs_test(object):
         #
 
         if self.qt_log:
-        
-            #  If appending
-            if self.qt_log_append:
-                # Log all but "debug" messages to the halo_db_migrate.log file
-                logging.basicConfig(filename='log/qs_test_results.log',level=logging.INFO)
-            else:
-                logfile_archive()
-                logging.basicConfig(filename='log/qs_test_results.log',level=logging.INFO)
-            
+
+            self.logging = init_logging(self.qt_log_display)    
             dt = str(datetime.datetime.now())
-            logging.info("------ Start Testing: "+dt)
+            self.logging.info("------ Start Testing: "+dt)
             
         #  Get user authorization information
         
@@ -189,12 +165,12 @@ class qs_test(object):
             try:
                 resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
             except:    #  If the authorization fails the function will fail
-                if self.qt_log: logging.warning("> INVALID USERNAME -> "+self.test_info_dict['username'])
+                if self.qt_log: self.logging.warning("> INVALID USERNAME -> "+self.test_info_dict['username'])
                 sys.exit()
             
             if resp.status_code == 200:     # This means the Test Plan was found
             
-                if self.qt_log: logging.info("> Test Plan : "+self.test_info_dict['test_plan_key'])
+                if self.qt_log: self.logging.info("> Test Plan : "+self.test_info_dict['test_plan_key'])
             
                 # Verify the Test Cycle exists and it is ACTIVE
                 cycle_active = False
@@ -211,24 +187,44 @@ class qs_test(object):
                     
                 
                 if cycle_exists and cycle_active:
-                    if self.qt_log: logging.info("> Test Cycle Name : "+self.test_info_dict['testCycleName'])
+                    if self.qt_log: self.logging.info("> Test Cycle Name : "+self.test_info_dict['testCycleName'])
                 else:
                     if not cycle_exists:
-                        if self.qt_log: logging.warning("> Test CYCLE NOT FOUND -> "+self.test_info_dict['testCycleName'])
+                        if self.qt_log: self.logging.warning("> Test CYCLE NOT FOUND -> "+self.test_info_dict['testCycleName'])
                         sys.exit()
                     else:
-                        if self.qt_log: logging.warning("> Test CYCLE "+self.test_info_dict['testCycleName']+ ' FOUND, but STATUS is '+cycleState)
+                        if self.qt_log: self.logging.warning("> Test CYCLE "+self.test_info_dict['testCycleName']+ ' FOUND, but STATUS is '+cycleState)
                         sys.exit()
             
             else:   #  Test plan was not found.  Log and exit
             
-                if self.qt_log: logging.warning("> Test Plan NOT FOUND -> "+self.test_info_dict['test_plan_key'])
+                if self.qt_log: self.logging.warning("> Test Plan NOT FOUND -> "+self.test_info_dict['test_plan_key'])
                 sys.exit()
             
         except FileNotFoundError as fnfe:
             raise QSTError(fnfe)
+            
+    def __init_logging(self, displayLog):
+        timestamp = datetime.datetime.now().strftime("QST_Run_%Y_%m_%d_%H_%M_%S")
+    
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+        fh = logging.FileHandler('log/'+timestamp)
+        formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
+        fh.setLevel(logging.INFO)
+        fh.setFormatter(formatter)
+        if displayLog:
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.INFO)
+            ch.setFormatter(formatter)
+            logger.addHandler(ch)
         
-    def __get_pass(self):
+        logger.addHandler(fh)
+        logger.info('Begin logging test run')
+        return logger
+        
+    def __get_pass(self): 
+
         # get the token
         key_file = "qsjira_key"
         self.__cipher = get_fernet(key_file)
@@ -237,9 +233,13 @@ class qs_test(object):
         #    The password must also be decoded from "utf-8"
         with open(self.qs_pass_file, 'rb') as pf:
             self.__qsjira_password = self.__cipher.decrypt(pf.read()).decode()
-            logging.info("User Password found and extracted")
+            self.logging.info("User Password found and extracted")
+            
+
+
     
     def get_token(self):
+ 
         if self.auth_url == None:
             raise QSTError('Authentication URL not defined.')
 
@@ -266,6 +266,7 @@ class qs_test(object):
         
     def qst_result_srt(self, testcase_srt, result_srt, comment_srt):
         myTest = synapsert.synapsert()
+
         
         #
         # Verify test case exists
@@ -274,7 +275,7 @@ class qs_test(object):
         try:
             resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
         except:    #  If the authorization fails the function will fail
-            if self.qt_log: logging.warning("Function qst_result_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
+            if self.qt_log: self.logging.warning("Function qst_result_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
             sys.exit()
             
         if resp.status_code == 200:     # This means the Test Plan was found
@@ -286,15 +287,15 @@ class qs_test(object):
                     testCase_exists = True
                 
             if testCase_exists:
-                if self.qt_log: logging.info("> Test Case Key : "+testcase_srt)
+                if self.qt_log: self.logging.info("> Test Case Key : "+testcase_srt)
             else:
-                if self.qt_log: logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
+                if self.qt_log: self.logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
                 sys.exit()
 
             
         else:   #  Test plan was not found.  Log and exit
             
-            if self.qt_log: logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
+            if self.qt_log: self.logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
             sys.exit()
         
         #
@@ -307,12 +308,12 @@ class qs_test(object):
         
             test_run_data = { "testcaseKey":testcase_srt, "result":result_srt,  "comment":comment_srt }
             resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data, self.cert_file)
-            if self.qt_log: logging.info("Result: "+result_srt+" > Comment: "+comment_srt)
-            if self.qt_log: logging.info("-----------------------------")
+            if self.qt_log: self.logging.info("Result: "+result_srt+" > Comment: "+comment_srt)
+            if self.qt_log: self.logging.info("-----------------------------")
             
         else:    # Invalid Result Entered
         
-            if self.qt_log: logging.warning("> INVALID Result Entered -> "+result_srt+" for Test Case Key: "+testcase_srt)
+            if self.qt_log: self.logging.warning("> INVALID Result Entered -> "+result_srt+" for Test Case Key: "+testcase_srt)
 
         return resp
         
@@ -326,7 +327,7 @@ class qs_test(object):
         try:
             resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
         except:    #  If the authorization fails the function will fail
-            if self.qt_log: logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
+            if self.qt_log: self.logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
             sys.exit()
             
         if resp.status_code == 200:     # This means the Test Plan was found
@@ -338,14 +339,14 @@ class qs_test(object):
                     testCase_exists = True
                 
             if testCase_exists:
-                if self.qt_log: logging.info("> Test Case Key : "+testcase_srt)
+                if self.qt_log: self.logging.info("> Test Case Key : "+testcase_srt)
             else:
-                if self.qt_log: logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
+                if self.qt_log: self.logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
                 sys.exit()
             
         else:   #  Test plan was not found.  Log and exit
             
-            if self.qt_log: logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
+            if self.qt_log: self.logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
             sys.exit()
         
         
@@ -359,15 +360,15 @@ class qs_test(object):
         
             test_run_data = { "testcaseKey":testcase_srt, "result": 'Passed',  "comment": msg_pass }
             resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data, self.cert_file)
-            if self.qt_log: logging.info("Result: Passed...Comment: "+msg_pass)
-            if self.qt_log: logging.info("-----------------------------")
+            if self.qt_log: self.logging.info("Result: Passed...Comment: "+msg_pass)
+            if self.qt_log: self.logging.info("-----------------------------")
             
         else:    # jsonA does not equal jsonE, test failed
         
             test_run_data = { "testcaseKey":testcase_srt, "result": 'Failed',  "comment": msg_fail + ' Actual: '+jsonA+ ';  Expected: '+jsonE }
             resp = myTest.update_test_run(self.jira_url, self.authorization, self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], test_run_data, self.cert_file)
-            if self.qt_log: logging.info("Result: Failed...Comment: "+ msg_fail + " -> Actual: " + jsonA + ";  Expected: " + jsonE)
-            if self.qt_log: logging.info("-----------------------------")
+            if self.qt_log: self.logging.info("Result: Failed...Comment: "+ msg_fail + " -> Actual: " + jsonA + ";  Expected: " + jsonE)
+            if self.qt_log: self.logging.info("-----------------------------")
 
         return resp
         
@@ -381,7 +382,7 @@ class qs_test(object):
         try:
             resp, respj = myTest.get_test_runs(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], self.cert_file)
         except:    #  If the authorization fails the function will fail
-            if self.qt_log: logging.warning("Function qst_store_log_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
+            if self.qt_log: self.logging.warning("Function qst_store_log_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
             sys.exit()
             
         if resp.status_code == 200:     # This means the Test Plan was found
@@ -394,14 +395,14 @@ class qs_test(object):
                     runID = theTestCases['id']
                 
             if testCase_exists:
-                if self.qt_log: logging.info("> Add Attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID))
+                if self.qt_log: self.logging.info("> Add Attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID))
             else:
-                if self.qt_log: logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
+                if self.qt_log: self.logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
                 sys.exit()
             
         else:   #  Test plan was not found.  Log and exit
             
-            if self.qt_log: logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
+            if self.qt_log: self.logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
             sys.exit()
             
         #
@@ -410,9 +411,9 @@ class qs_test(object):
         
         try:
             myTest.add_attachement_test_run(self.jira_url, self.authorization, str(runID), logpathname_srt, self.cert_file)
-            if self.qt_log: logging.info("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
+            if self.qt_log: self.logging.info("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
         except:
-            if self.qt_log: logging.warning("> Error uploading attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
+            if self.qt_log: self.logging.warning("> Error uploading attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
             sys.exit()
         
         return

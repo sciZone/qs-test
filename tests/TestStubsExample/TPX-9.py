@@ -33,11 +33,13 @@ import qs_test
 
 if __name__ == '__main__':
 
-    myMainTest = qs_test.qs_test()
     
     testCaseKey = os.path.splitext(os.path.basename(__file__))[0]
     
     print('The Test is: '+ os.path.splitext(os.path.basename(__file__))[0])
+
+    myMainTest = qs_test.qs_test()
+
     
     try: 
     

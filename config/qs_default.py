@@ -9,6 +9,7 @@ ENV_CONFIG={
     'CERT_FILE': False,
     'QT_SYNAPSERT': True,
     'QT_LOG': True,
+    'QT_LOG_DISPLAY': True,
     'QT_LOG_APPEND': False,
     'QS_USER': 'auser'
 }
