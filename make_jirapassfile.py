@@ -90,7 +90,12 @@ def main():
 if __name__ == '__main__':
 
     # Log all but "debug" messages to the make_pgoassfile.log file
-    logging.basicConfig(filename='make_jirapassfile.log',level=logging.INFO)
+    isExist = os.path.exists('log') 
+    
+    if not isExist:
+        os.mkdir('log')
+    
+    logging.basicConfig(filename='log/make_jirapassfile.log',level=logging.INFO)
 
     # Operate password encryption function
     main()
