@@ -72,9 +72,9 @@ def parse_args():
     parser.add_argument('--config',
                         help='Configuration to use.',
                         default='qs_default')
+    args, unknown = parser.parse_known_args()
 
-
-    return parser.parse_args()
+    return args
 
 
 def init_logging(displayLog):
