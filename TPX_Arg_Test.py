@@ -51,7 +51,7 @@ class upload_results_args():
 def parse_args():
      parser = argparse.ArgumentParser(description='Load qs-test parameters', conflict_handler='resolve')
      parser.add_argument ('--name', type=str, help='Test case name (string)', default='TPX-10')
-     parser.add_argument ('--dir', type=str, help='Directory path for CTF log', default='log', required = True)
+     parser.add_argument ('--dir', type=str, help='Directory path for CTF log', default='log')
      args, unknown = parser.parse_known_args()
      #args = parser.parse_args()
      #args = upload_results_args()
