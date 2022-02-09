@@ -57,7 +57,7 @@ class synapsert(object):
             
             heyJira = jira_rest_api.jira_rest()
             cycles_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycles'
-            resp_rest = heyJira.api_request_get(cycles_rest_api, authorization)
+            resp_rest = heyJira.api_request_get(cycles_rest_api, authorization, cert_file)
             
             try:
                 respj = resp_rest.json()
