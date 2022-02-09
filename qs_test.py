@@ -170,7 +170,7 @@ class qs_test(object):
             
             if resp.status_code == 200:     # This means the Test Plan was found
             
-                if self.qt_log: self.logging.info("> Test Plan : "+self.test_info_dict['test_plan_key'])
+                if self.qt_log: logging.info("> Test Plan : "+self.test_info_dict['test_plan_key'])
             
                 # Verify the Test Cycle exists and it is ACTIVE
                 cycle_active = False
@@ -187,7 +187,7 @@ class qs_test(object):
                     
                 
                 if cycle_exists and cycle_active:
-                    if self.qt_log: self.logging.info("> Test Cycle Name : "+self.test_info_dict['testCycleName'])
+                    if self.qt_log: logging.info("> Test Cycle Name : "+self.test_info_dict['testCycleName'])
                 else:
                     if not cycle_exists:
                         if self.qt_log: self.logging.warning("> Test CYCLE NOT FOUND -> "+self.test_info_dict['testCycleName'])

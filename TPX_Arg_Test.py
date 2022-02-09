@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+'''
+Making a basic qs-test runner that accepts the test case and a directory path as parameters
+'''
+
+
+
+import syslog
+import subprocess
+import time
+import traceback
+import sys
+import os
+import errno
+import requests
+import json
+
+import codecs
+import shlex
+import getpass
+import datetime
+import logging
+import argparse
+import configparser
+
+
+import jira_rest_api
+import synapsert
+import qs_test
+
+
+import argparse
+import shutil
+
+#
+# class args: a class for holding the args since I can't use argparse
+#
+class upload_results_args():
+     def __init__(self):
+          self.name = sys.argv[1]
+          self.dir = sys.argv[2]
+
+
+#
+# function parse_args: This function gets the test case name and the log directory path and
+#                      returns them as a tuple.
+# @return: (<test_case_name>, <log_directory_path>)
+#
+
+def make_parser():
+     parser = argparse.ArgumentParser(description='Load qs-test parameters', conflict_handler='resolve')
+     parser.add_argument ('--name', type=str, help='Test case name (string)', default='TPX-10')
+     parser.add_argument ('--dir', type=str, help='Directory path for CTF log', default='log')
+     #args = parser.parse_args()
+     #args = upload_results_args()
+     #if not os.path.isdir(args.dir):
+     #     print("Error: path is not directory")
+     #     raise NotADirectoryError
+     return parser
+
+
+if __name__ == '__main__':
+     parser = make_parser()
+     args = parser.parse_args()
+     print('Test name is ' + args.name + ', directory is ' + args.dir)
+     print('Zipping up directory...')
+     reportZip = shutil.make_archive(args.dir, 'zip', args.dir)
+     print('Storing results of test...')
+     print(reportZip)
+     theZipFile = args.dir+'.zip'
+     print(theZipFile)
+     myTest = qs_test.qs_test()
+     testCase = args.name
+     #try:
+     #myTest.qst_store_log_srt(testCase, theZipFile)
+     #except:
+     #     pass
