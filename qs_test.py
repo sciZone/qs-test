@@ -198,7 +198,7 @@ class qs_test(object):
             
             else:   #  Test plan was not found.  Log and exit
             
-                if self.qt_log: self.logging.warning("> Test Plan NOT FOUND -> "+self.test_info_dict['test_plan_key'])
+                if self.qt_log: self.logging.warning("> QS_TEST ERROR from getting Test Cycles -> "+resp.status_code)
                 sys.exit()
             
         except FileNotFoundError as fnfe:
