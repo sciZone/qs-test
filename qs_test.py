@@ -198,7 +198,7 @@ class qs_test(object):
             
             else:   #  Test plan was not found.  Log and exit
             
-                if self.qt_log: self.logging.warning("> QS_TEST ERROR from getting Test Cycles -> "+str(resp.status_code))
+                if self.qt_log: self.logging.warning("> QS_TEST, INIT: ERROR from getting Test Cycles -> "+str(resp.status_code))
                 sys.exit()
             
         except FileNotFoundError as fnfe:
