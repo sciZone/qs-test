@@ -33,14 +33,6 @@ import qs_test
 import argparse
 import shutil
 
-#
-# class args: a class for holding the args since I can't use argparse
-#
-class upload_results_args():
-     def __init__(self):
-          self.name = sys.argv[1]
-          self.dir = sys.argv[2]
-
 
 #
 # function parse_args: This function gets the test case name and the log directory path and
@@ -53,11 +45,7 @@ def parse_args():
      parser.add_argument ('--name', type=str, help='Test case name (string)', default='TPX-10')
      parser.add_argument ('--dir', type=str, help='Directory path for CTF log', default='log')
      args, unknown = parser.parse_known_args()
-     #args = parser.parse_args()
-     #args = upload_results_args()
-     #if not os.path.isdir(args.dir):
-     #     print("Error: path is not directory")
-     #     raise NotADirectoryError
+
      return args, unknown
 
 
@@ -78,5 +66,5 @@ if __name__ == '__main__':
          myTest.qst_result_srt(testCase, 'Passed', 'Test stub for test case '+testCase)
          myTest.qst_store_log_srt(testCase, theZipFile)
      except:
-         print('in here')
+         print('**** Accessing QS_TEST Failed ****')
          pass
