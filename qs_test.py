@@ -314,6 +314,7 @@ class qs_test(object):
         else:    # Invalid Result Entered
         
             if self.qt_log: self.logging.warning("> INVALID Result Entered -> "+result_srt+" for Test Case Key: "+testcase_srt)
+            sys.exit()
 
         return resp
         
