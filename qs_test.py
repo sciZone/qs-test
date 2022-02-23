@@ -77,24 +77,6 @@ def parse_args():
     return args
 
 
-def init_logging(displayLog):
-    timestamp = datetime.datetime.now().strftime("QST_Run_%Y_%m_%d_%H_%M_%S")
-    
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler('log/'+timestamp)
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
-    fh.setLevel(logging.INFO)
-    fh.setFormatter(formatter)
-    if displayLog:
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
-        ch.setFormatter(formatter)
-        logger.addHandler(ch)
-        
-    logger.addHandler(fh)
-    logger.info('Begin logging test run')
-    return logger
 
 #   
 #    Exception Class for qs_test class of functions
@@ -138,7 +120,7 @@ class qs_test(object):
 
         if self.qt_log:
 
-            self.logging = init_logging(self.qt_log_display)    
+            self.logging = self.__init_logging(self.qt_log_display)    
             dt = str(datetime.datetime.now())
             self.logging.info("------ Start Testing: "+dt)
             
@@ -375,47 +357,56 @@ class qs_test(object):
         
     def qst_store_log_srt(self,testcase_srt,logpathname_srt):
         myTest = synapsert.synapsert()
-
+        
         #
-        # Verify test case exists
+        # Verify allowed to upload file to SynapseRT
         #
+        
+        if (self.test_info_dict['allowFileUpload']):
+        
+            #
+            # Verify test case exists
+            #
                         
-        try:
-            resp, respj = myTest.get_test_runs(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], self.cert_file)
-        except:    #  If the authorization fails the function will fail
-            if self.qt_log: self.logging.warning("Function qst_store_log_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
-            sys.exit()
-            
-        if resp.status_code == 200:     # This means the Test Plan was found
-            
-            # Verify the Test Case exists and get the test case runID 
-            testCase_exists = False
-            for theTestCases in respj:
-                if theTestCases['testCaseKey'] == testcase_srt:
-                    testCase_exists = True
-                    runID = theTestCases['id']
-                
-            if testCase_exists:
-                if self.qt_log: self.logging.info("> Add Attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID))
-            else:
-                if self.qt_log: self.logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
+            try:
+                resp, respj = myTest.get_test_runs(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.test_info_dict['testCycleName'], self.cert_file)
+            except:    #  If the authorization fails the function will fail
+                if self.qt_log: self.logging.warning("Function qst_store_log_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
                 sys.exit()
             
-        else:   #  Test plan was not found.  Log and exit
+            if resp.status_code == 200:     # This means the Test Plan was found
             
-            if self.qt_log: self.logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
-            sys.exit()
+            # Verify the Test Case exists and get the test case runID 
+                testCase_exists = False
+                for theTestCases in respj:
+                    if theTestCases['testCaseKey'] == testcase_srt:
+                        testCase_exists = True
+                        runID = theTestCases['id']
+                
+                if testCase_exists:
+                    if self.qt_log: self.logging.info("> Add Attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID))
+                else:
+                    if self.qt_log: self.logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
+                    sys.exit()
+            
+            else:   #  Test plan was not found.  Log and exit
+            
+                if self.qt_log: self.logging.warning("> ERROR with Test Plan "+self.test_info_dict['test_plan_key'])
+                sys.exit()
             
         #
         #  Upload file to Jira/synapsert
         #
         
-        try:
-            myTest.add_attachement_test_run(self.jira_url, self.authorization, str(runID), logpathname_srt, self.cert_file)
-            if self.qt_log: self.logging.info("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
-        except:
-            if self.qt_log: self.logging.warning("> Error uploading attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
-            sys.exit()
+            try:
+                myTest.add_attachement_test_run(self.jira_url, self.authorization, str(runID), logpathname_srt, self.cert_file)
+                if self.qt_log: self.logging.info("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
+            except:
+                if self.qt_log: self.logging.warning("> Error uploading attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
+                sys.exit()
+            
+        else:
+            if self.qt_log: self.logging.warning("> UPLOAD FILE SET TO FALSE. File '"+logpathname_srt+"' Cannot be uploaded to SynapseRT")
         
         return
     

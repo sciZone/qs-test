@@ -43,7 +43,7 @@ def main():
     while username_notEntered:
         username = input('Please enter your username : ') or None
         if username is not None:
-            confirm_enter_3 = input('--> CONFIRM Test Plan Key entered '+username+' [Y] or N: ') or 'Y'
+            confirm_enter_3 = input('--> CONFIRM Username entered '+username+' [Y] or N: ') or 'Y'
             if confirm_enter_3 == "Y":
                 username_notEntered = False
     
@@ -64,10 +64,25 @@ def main():
             confirm_enter_2 = input('--> CONFIRM Test Plan Key entered '+testCycleName+' [Y] or N: ') or 'Y'
             if confirm_enter_2 == "Y":
                 testCycleName_notEntered = False
+
+    # Enter if operator wants to allow the file upload
+    allowFileUpload_notEntered = True
+    while allowFileUpload_notEntered:
+        allowFileUpload = input('Do you want to allow file uploads to SynapseRT?:  [Y] or N:') or 'Y'
+        if allowFileUpload is not None:
+            if (allowFileUpload == "Y" or allowFileUpload == "y"):
+                allowFileUpload_l = True
+                allowFileUpload_notEntered = False
+            elif (allowFileUpload == "N" or allowFileUpload == "n"):
+                allowFileUpload_l = False
+                allowFileUpload_notEntered = False
+            else:
+                allowFileUpload_notEntered = True
+
                 
     # Save the results in a JSON file
     
-    test_execution_info = {"username": username, "test_plan_key": test_plan_key, "testCycleName": testCycleName}
+    test_execution_info = {"username": username, "test_plan_key": test_plan_key, "testCycleName": testCycleName, "allowFileUpload": allowFileUpload_l }
     with open('config/test_info.json', 'w') as json_file:
         json.dump(test_execution_info, json_file)
 
