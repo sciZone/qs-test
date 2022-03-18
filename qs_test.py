@@ -421,6 +421,25 @@ class qs_test(object):
         
         if self.qt_synapsert:
             qst_result_srt(testcase,result,comment)
+            
+    def qst_get_test_case_set(self):
+        myTest = synapsert.synapsert()
+        #
+        # Get the set of test cases for a given test plan
+        
+        try:
+            resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
+        except:    #  If the authorization fails the function will fail
+            if self.qt_log: self.logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
+            sys.exit()
+            
+        if resp.status_code == 200:     # This means the Test Plan was found
+            testCaseList = []
+            for thesummary in respj:
+                testCaseList.append(thesummary['testCaseKey'])
+        with open('config/test_case_list.json', 'w') as json_file:
+            json.dump(testCaseList, json_file)        
+        return
 
 
 if __name__ == '__main__':

@@ -116,6 +116,26 @@ class synapsert(object):
 
 
 #
+# ADD Test Cylce(s) to Test Plan
+#
+#    Format (Example) for data_api:
+#
+#   {
+#  "name":"REST API Cycle 1",
+#  "environment":"Firefox",
+#  "build":"build 1.0"
+#  "plannedStartDate":"2017-04-13",
+#  "plannedEndDate":"2017-04-15"
+#  }
+
+    def add_test_cycle(self, host_url, authorization, test_plan_key, data_api, cert_file):
+    
+            heyJira = jira_rest_api.jira_rest()
+            test_to_plan_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/addCycle'
+            resp_rest = heyJira.api_request_post(test_to_plan_rest_api, data_api, authorization, cert_file)
+
+            return resp_rest
+#
 # ADD Test Case(s) to Test Plan
 #
 #    Format (Example):

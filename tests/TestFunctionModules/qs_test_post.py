@@ -32,12 +32,12 @@ class qs_test_post:
 
 if __name__ == '__main__':
 
+    cert_data=False
     authorization = ('spacetravelerx','spacey')
     myTest = synapsert.synapsert()
     test_run_data = { 
-          "runStepId": 2, "result":"Blocked", "actualResult":"This Test Step is failed.", "bugs":[]
+          "name": "test2", "environment":"QS_TEST", "build":"Version Test", "plannedStartDate":"2017-04-13", "plannedEndDate":"2017-04-15"
     }
-    runID = '7'
-    resp = myTest.update_test_run_step('http://localhost:8080',authorization, runID, test_run_data)
+    resp = myTest.add_test_cycle('http://localhost:8080',authorization, "TPX-15", test_run_data, cert_data)
     print(resp.status_code)
 
