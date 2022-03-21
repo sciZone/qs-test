@@ -53,8 +53,8 @@ import synapsert
 #
 #           key_file = the filename storing the key for the file to be decrypted
 
-def get_fernet(key_file):
-    with open(f"config/."+key_file, "rb") as f:
+def get_fernet(qs_home, key_file):
+    with open(f""+qs_home+"config/."+key_file, "rb") as f:
         cipher = Fernet(f.read())
 
     return cipher
@@ -67,11 +67,11 @@ def get_fernet(key_file):
 #
 #
 
-def parse_args():
+def parse_args(qs_home):
     parser = argparse.ArgumentParser(description='Load QuickSAT Data.')
     parser.add_argument('--config',
                         help='Configuration to use.',
-                        default='qs_default')
+                        default= 'qs_default')
     args, unknown = parser.parse_known_args()
 
     return args
@@ -89,10 +89,18 @@ class qs_test(object):
 
     def __init__(self):
         
+        
+        #
+        #  Get the path to the home directory if it exists
+        #
+        
+        self.qst_home = os.getenv('QS_HOME','')
+        
         #
         #  Get Configuration information
         #
-        args = parse_args()              # Define args
+        args = parse_args(self.qst_home)              # Define args
+
 
         #  Read the configuration information specific to the QuickSAT Environment
         config = __import__(f'config.{args.config}', fromlist=['ENV_CONFIG', 'DATABASE_CONFIG'])
@@ -110,7 +118,7 @@ class qs_test(object):
         
         qspass_file = config.ENV_CONFIG.get('QS_PASSSFILE', None)
         if qspass_file == None:
-            self.qs_pass_file = f"config/.qsjirapassfile"
+            self.qs_pass_file = f""+self.qst_home+"config/.qsjirapassfile"
         else:
             self.qs_pass_file = qspass_file
 
@@ -120,13 +128,13 @@ class qs_test(object):
 
         if self.qt_log:
 
-            self.logging = self.__init_logging(self.qt_log_display)    
+            self.logging = self.__init_logging(self.qst_home, self.qt_log_display)    
             dt = str(datetime.datetime.now())
             self.logging.info("------ Start Testing: "+dt)
             
         #  Get user authorization information
         
-        self.get_token()
+        self.get_token(self.qst_home)
 
         #
         #  Get current test plan info
@@ -135,7 +143,7 @@ class qs_test(object):
         # Verify the file config/test_info.json exists. If not quit test...
         
         try:
-            with open('config/test_info.json', 'r') as f:
+            with open(self.qst_home+'config/test_info.json', 'r') as f:
                 self.test_info_dict = json.load(f)
                 
             # Verify the Test Plan exists
@@ -186,12 +194,12 @@ class qs_test(object):
         except FileNotFoundError as fnfe:
             raise QSTError(fnfe)
             
-    def __init_logging(self, displayLog):
+    def __init_logging(self, qst_home, displayLog):
         timestamp = datetime.datetime.now().strftime("QST_Run_%Y_%m_%d_%H_%M_%S")
     
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler('log/'+timestamp)
+        fh = logging.FileHandler(qst_home+'log/'+timestamp)
         formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
         fh.setLevel(logging.INFO)
         fh.setFormatter(formatter)
@@ -209,7 +217,7 @@ class qs_test(object):
 
         # get the token
         key_file = "qsjira_key"
-        self.__cipher = get_fernet(key_file)
+        self.__cipher = get_fernet(self.qst_home,key_file)
         
         # Extract the halo Password from the .qsjira_key
         #    The password must also be decoded from "utf-8"
@@ -220,7 +228,7 @@ class qs_test(object):
 
 
     
-    def get_token(self):
+    def get_token(self, qs_home):
  
         if self.auth_url == None:
             raise QSTError('Authentication URL not defined.')
@@ -248,7 +256,7 @@ class qs_test(object):
         
     def qst_result_srt(self, testcase_srt, result_srt, comment_srt):
         myTest = synapsert.synapsert()
-
+        self.logging.propagate = False
         
         #
         # Verify test case exists
@@ -302,7 +310,7 @@ class qs_test(object):
         
     def qst_test_srt(self,testcase_srt,expected_val,actual_val,msg_pass,msg_fail):
         myTest = synapsert.synapsert()
-
+        self.logging.propagate = False
         #
         # Verify test case exists
         #
@@ -357,6 +365,7 @@ class qs_test(object):
         
     def qst_store_log_srt(self,testcase_srt,logpathname_srt):
         myTest = synapsert.synapsert()
+        self.logging.propagate = False
         
         #
         # Verify allowed to upload file to SynapseRT
@@ -414,7 +423,8 @@ class qs_test(object):
         return
         
     def qst_result(self, testcase, result, comment):
-    
+        self.logging.propagate = False
+
         #
         # select function based on environment data
         #
@@ -424,6 +434,7 @@ class qs_test(object):
             
     def qst_get_test_case_set(self):
         myTest = synapsert.synapsert()
+        self.logging.propagate = False
         #
         # Get the set of test cases for a given test plan
         
@@ -437,9 +448,17 @@ class qs_test(object):
             testCaseList = []
             for thesummary in respj:
                 testCaseList.append(thesummary['testCaseKey'])
-        with open('config/test_case_list.json', 'w') as json_file:
-            json.dump(testCaseList, json_file)        
-        return
+                
+    
+            with open(self.qst_home+'config/test_case_list.json', 'w') as json_file:
+                json.dump(testCaseList, json_file)     
+                
+            if self.qt_log: self.logging.info("* qs_test_test_cases_srt: Test Cases captured for the Test Plan: "+self.test_info_dict['test_plan_key'])
+        else:   #  Test plan was not found.  Log and exit
+        
+            if self.qt_log: self.logging.warning("> QS_TEST, GET TEST CASES: ERROR from getting Test Case "+ self.test_info_dict['test_plan_key']+" and its Test Cycles -> "+str(resp.status_code))
+            sys.exit()               
+        return self.test_info_dict['test_plan_key']
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@
 Callable Test Case Information for the qs_test environment.  This application
      assumes Jira/SynapseRT are used to store the test results.
      
-results are stored in the directory 'config' in the file names 'test_case_list.json'
+results are stored in the directory 'config' in the file names 'test_case_list.jsonup'
     
 
 --------------------------------------------------------------------------
@@ -65,4 +65,4 @@ if __name__ == '__main__':
 
     result = myTest.qst_get_test_case_set()
 
-          
+    
