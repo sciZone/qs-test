@@ -432,32 +432,80 @@ class qs_test(object):
         if self.qt_synapsert:
             qst_result_srt(testcase,result,comment)
             
-    def qst_get_test_case_set(self):
+    def qst_get_test_case_set(self, test_plan_id, cycle_id):
         myTest = synapsert.synapsert()
         self.logging.propagate = False
-        #
-        # Get the set of test cases for a given test plan
         
-        try:
-            resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
-        except:    #  If the authorization fails the function will fail
-            if self.qt_log: self.logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
-            sys.exit()
+
+        #
+        #  Remove old file containing old list of files
+        #
+    
+        if os.path.exists(self.qst_home+'config/test_case_list.json'):
+            os.remove(self.qst_home+'config/test_case_list.json')
+        
+        if cycle_id and test_plan_id:
+        
+        #   Get the set of test cases for a given test cycle ID
+        #
+        
+            try:
+                resp, respj = myTest.get_test_runs_by_id(self.jira_url,self.authorization, test_plan_id, cycle_id, self.cert_file)
+            except:    #  If the authorization fails the function will fail
+                if self.qt_log: self.logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
+                sys.exit()            
+
+            if resp.status_code == 200:     # This means the Test Plan was found
+                testCaseList = []
+                if respj:
+                    for thesummary in respj:
+                        testCaseList.append(thesummary['testCaseKey'])
+                else:
+                    if self.qt_log: self.logging.info("> QS_TEST, GET TEST CASES: Notice - There are no test cases for the given Test Plan ID "+test_plan_id+" and Test Cycle ID "+cycle_id)
+                
+                with open(self.qst_home+'config/test_case_list.json', 'w') as json_file:
+                    json.dump(testCaseList, json_file)     
+                
+                if self.qt_log: self.logging.info("* QS_TEST: Test Cases captured for the Test Plan: "+test_plan_id+" and Test Cycle Key: "+cycle_id)
+            else:   #  Test plan was not found.  Log and exit
+        
+                if self.qt_log: self.logging.warning("> QS_TEST, GET TEST CASES: ERROR from getting Test Case for the Test Plan ID "+ test_plan_id +" and its Test Cycles -> "+str(resp.status_code))
+                sys.exit()   
+                
+        elif (not cycle_id and test_plan_id):
+                if self.qt_log: self.logging.warning("> QS_TEST, GET TEST CASES: ERROR from getting Test Case - Need both Test Plan ID and Test Cyle ID, only Test Plan ID Given")
+                sys.exit()   
+
+        elif (cycle_id and not test_plan_id):
+                if self.qt_log: self.logging.warning("> QS_TEST, GET TEST CASES: ERROR from getting Test Case - Need both Test Plan ID and Test Cyle ID, only Test Cycle ID Given")
+                sys.exit()   
+
+        else:
+        
+        #
+        #    Get the set of test cases for a given test plan from the user qs_default.py file
+        
+            try:
+                resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
+            except:    #  If the authorization fails the function will fail
+                if self.qt_log: self.logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
+                sys.exit()
             
-        if resp.status_code == 200:     # This means the Test Plan was found
-            testCaseList = []
-            for thesummary in respj:
-                testCaseList.append(thesummary['testCaseKey'])
+            if resp.status_code == 200:     # This means the Test Plan was found
+                testCaseList = []
+                for thesummary in respj:
+                    testCaseList.append(thesummary['testCaseKey'])
                 
     
-            with open(self.qst_home+'config/test_case_list.json', 'w') as json_file:
-                json.dump(testCaseList, json_file)     
+                with open(self.qst_home+'config/test_case_list.json', 'w') as json_file:
+                    json.dump(testCaseList, json_file)     
                 
-            if self.qt_log: self.logging.info("* qs_test_test_cases_srt: Test Cases captured for the Test Plan: "+self.test_info_dict['test_plan_key'])
-        else:   #  Test plan was not found.  Log and exit
+                if self.qt_log: self.logging.info("* QS_TEST: Test Cases captured for the Test Plan: "+self.test_info_dict['test_plan_key'])
+            else:   #  Test plan was not found.  Log and exit
         
-            if self.qt_log: self.logging.warning("> QS_TEST, GET TEST CASES: ERROR from getting Test Case "+ self.test_info_dict['test_plan_key']+" and its Test Cycles -> "+str(resp.status_code))
-            sys.exit()               
+                if self.qt_log: self.logging.warning("> QS_TEST, GET TEST CASES: ERROR from getting Test Case for the given Test Plan ID "+ self.test_info_dict['test_plan_key']+" and its Test Cycles -> "+str(resp.status_code))
+                sys.exit()               
+        
         return self.test_info_dict['test_plan_key']
 
 

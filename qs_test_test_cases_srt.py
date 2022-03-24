@@ -53,16 +53,55 @@ import qs_test
 import argparse
 import shutil
 
+#
+# function parse_args: This function gets the test case name and results to post to 
+#                      the SynapseRT related test case ANDreturns them as a tuple.
+# @return: (<test_case_name>, <log_directory_path>)
+#
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Load qs-test parameters', conflict_handler='resolve')
+    parser.add_argument ('--tpid', type=str, help='Test Test Plan ID (string)', default = None)
+    parser.add_argument ('--cid', type=str, help='Test Cycle ID (string)', default = None)
+
+    args, unknown = parser.parse_known_args()
+
+    return args, unknown
 
 
 
 if __name__ == '__main__':
 
+    args, unknown = parse_args()
 
     myTest = qs_test.qs_test()   # Creating new instance of qs_test Class    
     
     cert_file = False
+    
+    #
+    # Post test result 
+    #
+    
+    
+    if (args.tpid and not args.cid):
+        myTest.logging.warning("* qs_test_test_cases_srt: Entered Test Plan ID, but missing the Test Cycle ID")
+        myTest.logging.warning("* qs_test_test_cases_srt: Exiting qs_test_test_cases_srt")
+        sys.exit()
 
-    result = myTest.qst_get_test_case_set()
+    if (not args.tpid and args.cid):
+        myTest.logging.warning("* qs_test_test_cases_srt: Entered Test Cycle ID, but missing the Test Plan ID")
+        myTest.logging.warning("* qs_test_test_cases_srt: Exiting qs_test_test_cases_srt")
+        sys.exit()
+
+    try:
+    
+        result = myTest.qst_get_test_case_set(args.tpid, args.cid)
+
+    except:
+        myTest.logging.warning("* qs_test_test_cases_srt: Error getting test cases for given Test Plan ID AND Test Cycle ID")
+        myTest.logging.warning("* qs_test_test_cases_srt: Exiting qs_test_test_cases_srt")
+        sys.exit()  
+
+
 
     

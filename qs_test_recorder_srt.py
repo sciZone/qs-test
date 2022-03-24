@@ -102,7 +102,7 @@ if __name__ == '__main__':
             myTest.qst_result_srt(args.n, args.r, args.cm)
     except:
         myTest.logging.warning("* qs_test_recorder_srt: Error posting result and comment")
-        myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_tes_recorder_srt")
+        myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
         sys.exit()     
         
     #
@@ -113,7 +113,7 @@ if __name__ == '__main__':
             myTest.qst_store_log_srt(args.n, args.f)
         except:
             myTest.logging.warning("* qs_test_recorder_srt: Error Saving the file given")
-            myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_tes_recorder_srt")
+            myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
             sys.exit()
   
     #
@@ -129,7 +129,7 @@ if __name__ == '__main__':
             myTest.qst_store_log_srt(args.n, theZipFile)
         except:
             myTest.logging.warning("* qs_test_recorder_srt: Error zipping the directory given")
-            myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_tes_recorder_srt")
+            myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
             sys.exit()
 
     myTest.logging.info("* qs_test_recorder_srt: Recording results for Test Case "+args.n+" is completed")
