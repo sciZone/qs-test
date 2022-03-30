@@ -95,7 +95,7 @@ if __name__ == '__main__':
 
     try:
     
-        result = myTest.qst_get_test_case_set(args.tpid, args.cid)
+        result = myTest.qst_get_test_case_set_srt(args.tpid, args.cid)
 
     except:
         myTest.logging.warning("* qs_test_test_cases_srt: Error getting test cases for given Test Plan ID AND Test Cycle ID")

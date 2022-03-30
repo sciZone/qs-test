@@ -432,7 +432,7 @@ class qs_test(object):
         if self.qt_synapsert:
             qst_result_srt(testcase,result,comment)
             
-    def qst_get_test_case_set(self, test_plan_id, cycle_id):
+    def qst_get_test_case_set_srt(self, test_plan_id, cycle_id):
         myTest = synapsert.synapsert()
         self.logging.propagate = False
         
