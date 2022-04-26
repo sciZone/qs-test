@@ -74,7 +74,13 @@ def parse_args():
 
 if __name__ == '__main__':
     args, unknown = parse_args()
-
+    
+    #
+    #  Get the path to the home directory if it exists
+    #
+        
+    qst_home = os.getenv('QT_HOME','')
+        
     myTest = qs_test.qs_test()   # Creating new instance of qs_test Class
     
     #print(unknown)
@@ -112,6 +118,8 @@ if __name__ == '__main__':
         try:
             myTest.qst_store_log_srt(args.n, args.f)
         except:
+            print(args.n)
+            print(args.f)
             myTest.logging.warning("* qs_test_recorder_srt: Error Saving the file given")
             myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
             sys.exit()
@@ -131,6 +139,23 @@ if __name__ == '__main__':
             myTest.logging.warning("* qs_test_recorder_srt: Error zipping the directory given")
             myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
             sys.exit()
-
+                
+    #
+    # Write the qs_test log file automatically to the related test case.  Note, writing the log file
+    # also gets logged but it will not be captured un the uploaded file
+    #
+    
+    try:
+        reportZip = shutil.make_archive(qst_home+"log", 'zip', qst_home+"log")
+        theZipFile = qst_home+"log"+'.zip'
+        myTest.qst_store_log_srt(args.n, theZipFile)
+    except:
+        myTest.logging.warning("* qs_test_recorder_srt: Error zipping the QS_TEST log directory")
+        myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
+        sys.exit()
+            
     myTest.logging.info("* qs_test_recorder_srt: Recording results for Test Case "+args.n+" is completed")
+    
+    
+
 

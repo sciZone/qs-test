@@ -30,6 +30,7 @@ import os
 import errno
 import requests
 import json
+import glob
 
 import codecs
 import shlex
@@ -94,7 +95,7 @@ class qs_test(object):
         #  Get the path to the home directory if it exists
         #
         
-        self.qst_home = os.getenv('QS_HOME','')
+        self.qst_home = os.getenv('QT_HOME','')
         
         #
         #  Get Configuration information
@@ -112,6 +113,7 @@ class qs_test(object):
         self.cert_file = config.ENV_CONFIG.get('CERT_FILE', None)
         self.qt_synapsert = config.ENV_CONFIG.get('QT_SYNAPSERT', False)
         self.qt_log = config.ENV_CONFIG.get('QT_LOG', False)
+        self.qt_log_flush = config.ENV_CONFIG.get('QT_LOG_FLUSH', False)        
         self.qt_log_display = config.ENV_CONFIG.get('QT_LOG_DISPLAY', False)
         self.qt_log_append = config.ENV_CONFIG.get('QT_LOG_APPEND', False)
         self.qs_user = config.ENV_CONFIG.get('QS_USER', None)
@@ -121,6 +123,25 @@ class qs_test(object):
             self.qs_pass_file = f""+self.qst_home+"config/.qsjirapassfile"
         else:
             self.qs_pass_file = qspass_file
+
+
+        # 
+        #  Remove ALL old log files IF qt_log_flush is enabled
+        #
+        
+        if self.qt_log_flush:
+            # Get a list of all the QST_Run_* log files
+            
+            qt_fileList = glob.glob(self.qst_home+'log/QST_Run_*')
+            qst_run_log  = 'QST_Run_*'
+
+            # Iterate over the list of filepaths & remove each file.
+            for filePath in qt_fileList:
+                try:
+                    os.remove(filePath)
+                except:
+                    print("Error while deleting file : ", filePath)
+        
 
         # 
         #  Set up log file IF enabled
@@ -366,11 +387,9 @@ class qs_test(object):
     def qst_store_log_srt(self,testcase_srt,logpathname_srt):
         myTest = synapsert.synapsert()
         self.logging.propagate = False
-        
         #
         # Verify allowed to upload file to SynapseRT
         #
-        
         if (self.test_info_dict['allowFileUpload']):
         
             #
@@ -382,7 +401,6 @@ class qs_test(object):
             except:    #  If the authorization fails the function will fail
                 if self.qt_log: self.logging.warning("Function qst_store_log_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
                 sys.exit()
-            
             if resp.status_code == 200:     # This means the Test Plan was found
             
             # Verify the Test Case exists and get the test case runID 
@@ -416,7 +434,6 @@ class qs_test(object):
             
         else:
             if self.qt_log: self.logging.warning("> UPLOAD FILE SET TO FALSE. File '"+logpathname_srt+"' Cannot be uploaded to SynapseRT")
-        
         return
     
     def add_attachement_test_run(self, host_url, authorization, runID, file_path_info):
