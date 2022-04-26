@@ -129,7 +129,7 @@ class qs_test(object):
         #  Remove ALL old log files IF qt_log_flush is enabled
         #
         
-        if self.qt_log_flush:
+        if self.qt_log_flush and not self.qt_log_append:
             # Get a list of all the QST_Run_* log files
             
             qt_fileList = glob.glob(self.qst_home+'log/QST_Run_*')
@@ -149,7 +149,7 @@ class qs_test(object):
 
         if self.qt_log:
 
-            self.logging = self.__init_logging(self.qst_home, self.qt_log_display)    
+            self.logging = self.__init_logging(self.qst_home, self.qt_log_display, self.qt_log_append, self.qt_log_flush)    
             dt = str(datetime.datetime.now())
             self.logging.info("------ Start Testing: "+dt)
             
@@ -215,12 +215,21 @@ class qs_test(object):
         except FileNotFoundError as fnfe:
             raise QSTError(fnfe)
             
-    def __init_logging(self, qst_home, displayLog):
+    def __init_logging(self, qst_home, displayLog, logappend, logflush):
         timestamp = datetime.datetime.now().strftime("QST_Run_%Y_%m_%d_%H_%M_%S")
     
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
-        fh = logging.FileHandler(qst_home+'log/'+timestamp)
+        
+        if logappend:
+            # get most recent QST_Run log file
+            list_of_log_files = glob.glob(qst_home+'log/QST_Run*') # * means all if need specific format then *.csv
+            qt_latest_log_file = max(list_of_log_files, key=os.path.getctime)
+            print(qt_latest_log_file)
+            fh = logging.FileHandler(qt_latest_log_file)
+        else:
+            fh = logging.FileHandler(qst_home+'log/'+timestamp)
+            
         formatter = logging.Formatter('%(asctime)s [%(levelname)s]: %(message)s')
         fh.setLevel(logging.INFO)
         fh.setFormatter(formatter)
