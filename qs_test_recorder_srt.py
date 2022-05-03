@@ -122,7 +122,7 @@ if __name__ == '__main__':
             print(args.f)
             myTest.logging.warning("* qs_test_recorder_srt: Error Saving the file given")
             myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
-            sys.exit()
+            #sys.exit()
   
     #
     # check if directory ('d') is provided.  If yes, exit the zip the directory
@@ -138,7 +138,7 @@ if __name__ == '__main__':
         except:
             myTest.logging.warning("* qs_test_recorder_srt: Error zipping the directory given")
             myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
-            sys.exit()
+            #sys.exit()
                 
     #
     # Write the qs_test log file automatically to the related test case.  Note, writing the log file
@@ -152,7 +152,7 @@ if __name__ == '__main__':
     except:
         myTest.logging.warning("* qs_test_recorder_srt: Error zipping the QS_TEST log directory")
         myTest.logging.warning("* qs_test_recorder_srt: Exiting qs_test_recorder_srt")
-        sys.exit()
+        #sys.exit()
             
     myTest.logging.info("* qs_test_recorder_srt: Recording results for Test Case "+args.n+" is completed")
     
