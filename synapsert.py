@@ -4,7 +4,7 @@
 Core Test Class for SynapseRT Rest API Tool
 
 
-Copyright (c) 2018-2021, sci_Zone, Inc.
+Copyright (c) 2018-2026, sci_Zone, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,10 +45,6 @@ class synapsert(object):
 #Test Assignment from Test Plan level
 #
 
-#
-# Add Test Cycle to Test Plan
-#
-
 
 #
 # Get all test cycles for a given test plan
@@ -75,6 +71,8 @@ class synapsert(object):
             heyJira = jira_rest_api.jira_rest()
             test_plans_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/members'
             resp_rest = heyJira.api_request_get(test_plans_rest_api, authorization, cert_file)
+
+            print(test_plans_rest_api)
             
             try:
                 respj = resp_rest.json()
@@ -134,8 +132,12 @@ class synapsert(object):
             test_to_plan_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/addCycle'
             resp_rest = heyJira.api_request_post(test_to_plan_rest_api, data_api, authorization, cert_file)
 
-            return resp_rest
-#
+            try:
+                respj = resp_rest.json()
+                print(respj)
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}#
 # ADD Test Case(s) to Test Plan
 #
 #    Format (Example):
@@ -230,7 +232,7 @@ class synapsert(object):
 #
 
     def get_test_runs_by_id(self,host_url, authorization, test_plan_key, cycleId, cert_file):
-        
+
             heyJira = jira_rest_api.jira_rest()
             test_runs_cycle_id_rest_api = host_url+'/rest/synapse/latest/public/testPlan/'+test_plan_key+'/cycle/'+cycleId+'/testRunsByCycleId'
             resp_rest = heyJira.api_request_get(test_runs_cycle_id_rest_api, authorization, cert_file)
@@ -351,6 +353,7 @@ class synapsert(object):
     def add_attachement_test_run(self, host_url, authorization, runID, file_path_info, cert_file):
    
             heyJira = jira_rest_api.jira_rest()
+            # print(authorization)
             test_run_results_update_rest_api = host_url+'/rest/synapse/latest/public/attachment/'+runID+'/testrun'
             resp_rest = heyJira.api_request_post_upload_file(test_run_results_update_rest_api, file_path_info, authorization, cert_file)
 
@@ -383,6 +386,62 @@ class synapsert(object):
 #
 # Test Case Resource
 #
+#
+# Add Test Case with Test Steps
+#
+# Sample input to Testray
+# {
+#  "fields": 
+#  {
+#    "project":
+#      {"key": "FRS"},
+#    "summary": "REST API Test Case 1",
+#    "description": "This Test Case Is Created from REST API",
+#    "issuetype":
+#      {"name": "Test Case"}
+#  },
+#  "testcasesteps":
+#  [
+#    {"step":"It is the first Test Step", "stepData": "It is Test Data for the first Test Step", "expectedResult":"It is the Expected Result for the first Test Step"},
+#    {"step":"It is the second Test Step", "stepData": "It is Test Data for the second Test Step", "expectedResult":"It is the Expected Result for the second Test Step"}
+#  ]
+# }
+#
+
+    def add_test_case(self, host_url, authorization, test_case_data, cert_file):
+   
+            heyJira = jira_rest_api.jira_rest()
+            test_case_testcase_rest_api = host_url+'/rest/synapse/latest/public/testCase/create/createTestCase'
+            resp_rest = heyJira.api_request_post(test_case_testcase_rest_api, test_case_data, authorization, cert_file)
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
+            
+
+#            
+#  Link Existing Test Case/s to Test Suite
+#
+#
+#  Request format:
+# {
+#	"testCaseKeys": ["FRS-14","FRS-15"],
+#	"testSuitePath": "ROOT Test Suite/Sub Test Suite",
+#	"projectKey": "FRS"
+# }
+
+    def link_test_case_to_test_suite(self, host_url, authorization,test_case_data, cert_file):
+   
+            heyJira = jira_rest_api.jira_rest()
+            test_case_testsuite_rest_api = host_url+'/rest/synapse/latest/public/testSuite/linkTestCase'
+            resp_rest = heyJira.api_request_post(test_case_testsuite_rest_api, test_case_data, authorization, cert_file)
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
+  
 
 
 #
@@ -490,3 +549,57 @@ class synapsert(object):
                 return resp_rest, {"errorMessage": ValueError}
 
 
+# -----------------------------------------------------------------------------------
+#
+# Link Test Case(s) to Requirement
+#
+
+    def link_test_case_requirement(self, host_url, authorization, requirementIssueKey, test_case_add_list, cert_file):
+        """
+        Link one or more test cases to a requirement
+        
+        Args:
+            host_url: Jira base URL
+            authorization: Auth credentials
+            requirementIssueKey: Requirement issue key (e.g., "TIPS-REQ-001")
+            test_case_add_list: Dictionary with testCaseKeys list 
+                               Format: {"testCaseKeys": ["TAT-100", "TAT-101"]}
+            cert_file: SSL cert file
+            
+        Returns:
+            Tuple of (response object, response JSON)
+            
+        Example usage:
+            test_cases = {"testCaseKeys": ["TAT-100", "TAT-101"]}
+            resp, respj = myTest.link_test_case_requirement(
+                jira_url, 
+                authorization, 
+                "TIPS-REQ-001", 
+                test_cases, 
+                cert_file
+            )
+        """
+        heyJira = jira_rest_api.jira_rest()
+        
+        # Use test_case_add_list directly as data_api
+        data_api = test_case_add_list
+        print(data_api)
+        link_test_case_rest_api = host_url + '/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/linkTestCase'
+        resp_rest = heyJira.api_request_post(link_test_case_rest_api, data_api, authorization, cert_file)
+        return resp_rest
+
+
+#
+#	Get Linked Test Cases from a Requirement
+#
+
+
+    def get_linked_test_cases_requirements(self,host_url, authorization, requirementIssueKey, cert_file):
+            heyJira = jira_rest_api.jira_rest()
+            get_child_test_req_api = host_url+'/rest/synapse/latest/public/requirement/'+requirementIssueKey+'/linkedTestCases'
+            resp_rest = heyJira.api_request_get(get_child_test_req_api, authorization, cert_file)
+            try:
+                respj = resp_rest.json()
+                return resp_rest, respj
+            except ValueError:
+                return resp_rest, {"errorMessage": ValueError}
