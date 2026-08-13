@@ -4,7 +4,7 @@
 Core Test Class for QS_Test
 
 
-Copyright (c) 2018-2022, sci_Zone, Inc.
+Copyright (c) 2018-2026, sci_Zone, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.
+limitations under the License.   
 
 """
 
@@ -118,12 +118,29 @@ class qs_test(object):
         self.qt_log_append = config.ENV_CONFIG.get('QT_LOG_APPEND', False)
         self.qs_user = config.ENV_CONFIG.get('QS_USER', None)
         
-        qspass_file = config.ENV_CONFIG.get('QS_PASSSFILE', None)
-        if qspass_file == None:
+        qspass_file = config.ENV_CONFIG.get('QS_PASSFILE', False)
+        if qspass_file:
             self.qs_pass_file = f""+self.qst_home+"config/.qsjirapassfile"
         else:
-            self.qs_pass_file = qspass_file
+            self.qs_pass_file = ""
 
+
+        qspat_file = config.ENV_CONFIG.get('QS_PATFILE', False)
+        if qspat_file:
+            self.qs_pat_file = f""+self.qst_home+"config/.qsjirapatfile"
+        else:
+            self.qs_pat_file = ""
+
+        if not qspat_file and not qspass_file:
+            self.prompt = True
+        else:
+            self.prompt = False
+            
+        #print("Status of Pass File Existance: ",os.path.exists(self.qs_pass_file))
+        #print("Status of PAT File Existance: ",os.path.exists(self.qs_pat_file))
+        #print("the pass file is ", self.qs_pass_file)
+        #print("the pat file is ", self.qs_pat_file)
+        #print("The Prompt Setting is ",self.prompt)
 
         # 
         #  Remove ALL old log files IF qt_log_flush is enabled
@@ -140,7 +157,7 @@ class qs_test(object):
                 try:
                     os.remove(filePath)
                 except:
-                    print("Error while deleting file : ", filePath)
+                    print("QS_TEST - Error while deleting file : ", filePath)
         
 
         # 
@@ -176,7 +193,7 @@ class qs_test(object):
             try:
                 resp, respj = testSet.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
             except:    #  If the authorization fails the function will fail
-                if self.qt_log: self.logging.warning("> INVALID USERNAME -> "+self.test_info_dict['username'])
+                if self.qt_log: self.logging.warning("> INVALID USERNAME (test_info check ) -> "+self.test_info_dict['username'])
                 sys.exit()
             
             if resp.status_code == 200:     # This means the Test Plan was found
@@ -225,7 +242,7 @@ class qs_test(object):
             # get most recent QST_Run log file
             list_of_log_files = glob.glob(qst_home+'log/QST_Run*') # * means all if need specific format then *.csv
             qt_latest_log_file = max(list_of_log_files, key=os.path.getctime)
-            print(qt_latest_log_file)
+            # print(qt_latest_log_file)
             fh = logging.FileHandler(qt_latest_log_file)
         else:
             fh = logging.FileHandler(qst_home+'log/'+timestamp)
@@ -255,11 +272,23 @@ class qs_test(object):
             self.__qsjira_password = self.__cipher.decrypt(pf.read()).decode()
             self.logging.info("User Password found and extracted")
             
+    def __get_jiratoken(self): 
 
+        # get the jira token
+        tokenkey_file = "qsjiratoken_key"
+        self.__cipher_pat = get_fernet(self.qst_home,tokenkey_file)
+        
+        # Extract the halo Password from the .qsjira_key
+        #    The password must also be decoded from "utf-8"
+        with open(self.qs_pat_file, 'rb') as pf:
+            self.__qsjira_pat = self.__cipher_pat.decrypt(pf.read()).decode()
+            # print(self.__qsjira_pat)
+            self.logging.info("User Personal Access Token extracted")
+            
 
     
     def get_token(self, qs_home):
- 
+        # print(os.path.exists(self.qs_pat_file))
         if self.auth_url == None:
             raise QSTError('Authentication URL not defined.')
 
@@ -270,16 +299,23 @@ class qs_test(object):
             else:
                 raise QSTError('Jira User not defined.')
 
-        if not os.path.exists(self.qs_pass_file):
-            if self.prompt:
-                self.__jira_password = getpass.getpass(prompt='Enter Jira Password : ')
-            else:
-                raise QSTError('Jira Password file is missing.')
-        else:
+        if self.prompt:
+            self.__qsjira_password = getpass.getpass(prompt='Enter Jira Password : ')
+            self.authorization = (self.jira_user, self.__qsjira_password )    # Name mangling qsjira_password - treated as private
+            raise QSTError('Jira Password file is missing.')
+        elif os.path.exists(self.qs_pass_file):
             self.__get_pass()
+            self.authorization = (self.jira_user, self.__qsjira_password )    # Name mangling qsjira_password - treated as private
+        elif os.path.exists(self.qs_pat_file):
+            # print("path to pat file", os.path.exists(self.qs_pat_file))
+            self.__get_jiratoken()
+            self.authorization =  {"Authorization": f"Bearer {self.__qsjira_pat}"}
+        else:
+            self.logging.warning("--> Unable to access QS_TEST password")
+            sys.exit()
 
-        self.authorization = (self.jira_user, self.__qsjira_password )    # Name mangling qsjira_password - treated as private
-    
+        
+
     
     def get_test_plan_info_srt(self):
         return
@@ -291,13 +327,16 @@ class qs_test(object):
         #
         # Verify test case exists
         #
-                        
+        # print(self.test_info_dict['test_plan_key'])    
+        # print(self.jira_url)     
+        # print(self.authorization)
+        # print(self.cert_file)
+                      
         try:
             resp, respj = myTest.get_test_cases(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
         except:    #  If the authorization fails the function will fail
             if self.qt_log: self.logging.warning("Function qst_result_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
             sys.exit()
-            
         if resp.status_code == 200:     # This means the Test Plan was found
             
             # Verify the Test Case exists 
@@ -399,6 +438,7 @@ class qs_test(object):
         #
         # Verify allowed to upload file to SynapseRT
         #
+        # print("starting upload")
         if (self.test_info_dict['allowFileUpload']):
         
             #
@@ -411,15 +451,19 @@ class qs_test(object):
                 if self.qt_log: self.logging.warning("Function qst_store_log_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
                 sys.exit()
             if resp.status_code == 200:     # This means the Test Plan was found
-            
+                # print("verifying test case exists")
             # Verify the Test Case exists and get the test case runID 
                 testCase_exists = False
                 for theTestCases in respj:
+                    #print(theTestCases['testCaseKey'])
+                    #print(testcase_srt)
                     if theTestCases['testCaseKey'] == testcase_srt:
                         testCase_exists = True
-                        runID = theTestCases['id']
+                        runID = theTestCases['ID']
+                        #print("Run ID",runID)
                 
                 if testCase_exists:
+                    #print("test case exists")
                     if self.qt_log: self.logging.info("> Add Attachment for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID))
                 else:
                     if self.qt_log: self.logging.warning("> Test Case Key-> "+ testcase_srt + " <- NOT FOUND")
@@ -433,7 +477,8 @@ class qs_test(object):
         #
         #  Upload file to Jira/synapsert
         #
-        
+            #print("upload file")
+            #print(logpathname_srt)
             try:
                 myTest.add_attachement_test_run(self.jira_url, self.authorization, str(runID), logpathname_srt, self.cert_file)
                 if self.qt_log: self.logging.info("> Attachment uploaded for Test Case Key : "+testcase_srt+"'; Run ID: " +str(runID) +"; Attachment: "+ logpathname_srt)
@@ -443,6 +488,91 @@ class qs_test(object):
             
         else:
             if self.qt_log: self.logging.warning("> UPLOAD FILE SET TO FALSE. File '"+logpathname_srt+"' Cannot be uploaded to SynapseRT")
+        return
+
+    def qst_create_test_cycle_srt(self, test_cycle_name, test_cycle_build, test_cycle_environment):
+        myTest = synapsert.synapsert()
+        self.logging.propagate = False#
+#       Get most test cycles for the current test plan
+#
+        try:
+            resp, respj = myTest.get_test_cycles(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], self.cert_file)
+        except:
+            if self.qt_log: self.logging.warning("> No Test Cycles Exist for the Test Plan : "+testcase_srt)
+            sys.exit()
+
+
+#
+#       Extract the Test Cycle Environment Information from the most recent Test Cycle if one was not given;
+#           This is typically the first of the list due to the order in TestRay
+#
+
+        if (test_cycle_environment is not None):
+            cycleEnvironment = test_cycle_environment
+        else:
+            try: 
+                cycleEnvironment = respj[0]['environment']
+            except:
+                cycleEnvironment = ""
+
+#
+#       Extract the Test Cycle Build Information from the most recent Test Cycle if one was not given;
+#           This is typically the first of the list due to the order in TestRay
+#
+
+        if (test_cycle_build is not None):
+            build = test_cycle_build
+        else:
+            build = ""
+
+
+#       Create new test cycle if a new Test Cycle Name is not given
+#
+
+        if (test_cycle_name is not None):
+            testCycleName = test_cycle_name
+        else:
+            try: 
+                # set new number of test cycles with creation of this test cycle
+                num_test_cycles = len(respj)+1
+                # Create new Test Cycle Name
+                testCycleName = "TestCycle"+str(num_test_cycles)
+            except:
+                print('could not get the length')
+
+
+#    Format (Example) for data_api:
+#
+#   {
+#  "name":"REST API Cycle 1",
+#  "environment":"Firefox",
+#  "build":"build 1.0",
+#  "plannedStartDate":"2017-04-13",
+#  "plannedEndDate":"2017-04-15"
+#  }
+
+        # Set the Test Cycle start date and default to a 14 day window to exercise the test cycle
+        plannedStartDate = datetime.date.today()
+        plannedEndDate = date.today()+ datetime.timedelta(days=14)
+
+        #  define new test cycle
+        data_api =  {
+            "name":testCycleName,
+            "environment":cycleEnvironment,
+            "build":build,
+            "plannedStartDate":str(plannedStartDate),
+            "plannedEndDate":str(plannedEndDate)}
+
+        # Create the new test cycle
+
+        try:
+            resp = myTest.add_test_cycle(self.jira_url,self.authorization,self.test_info_dict['test_plan_key'], data_api, self.cert_file)
+            if self.qt_log: self.logging.info("> New Test Cycle Created "+testCycleName)
+            if self.qt_log: self.logging.info("-----------------------------")
+        except:
+            if self.qt_log: self.logging.warning("> Could not create new Test Cycle : "+testCycleName)
+            sys.exit()
+
         return
     
     def add_attachement_test_run(self, host_url, authorization, runID, file_path_info):
@@ -458,9 +588,10 @@ class qs_test(object):
         if self.qt_synapsert:
             qst_result_srt(testcase,result,comment)
             
-    def qst_get_test_case_set_srt(self, test_plan_id, cycle_id):
+    def qst_get_test_case_set_srt(self, test_plan_id, cycle_id, numberofservers, servernumber, wsid):
         myTest = synapsert.synapsert()
         self.logging.propagate = False
+
         
 
         #
@@ -474,23 +605,41 @@ class qs_test(object):
         
         #   Get the set of test cases for a given test cycle ID
         #
-        
+        #    print(self.test_info_dict['test_plan_key'])    
+        #    print(self.jira_url)     
+        #    print(self.authorization)
+        #    print(self.cert_file)
             try:
                 resp, respj = myTest.get_test_runs_by_id(self.jira_url,self.authorization, test_plan_id, cycle_id, self.cert_file)
             except:    #  If the authorization fails the function will fail
                 if self.qt_log: self.logging.warning("Function qst_test_srt> INVALID USERNAME -> "+self.test_info_dict['username'])
                 sys.exit()            
-
+            
             if resp.status_code == 200:     # This means the Test Plan was found
+                testCaseList_buffer = []
                 testCaseList = []
                 if respj:
                     for thesummary in respj:
-                        testCaseList.append(thesummary['testCaseKey'])
+                        testCaseList_buffer.append(thesummary['testCaseKey'])
                 else:
                     if self.qt_log: self.logging.info("> QS_TEST, GET TEST CASES: Notice - There are no test cases for the given Test Plan ID "+test_plan_id+" and Test Cycle ID "+cycle_id)
+                lenTestCaseList_buffer = len(testCaseList_buffer)
+                testGroupSize = lenTestCaseList_buffer//int(numberofservers)
+                testGroupRemainder = lenTestCaseList_buffer%int(numberofservers)
+
+                if (numberofservers != servernumber):
+                    for i in range((int(servernumber)-1)*(testGroupSize),((int(servernumber)-1)*testGroupSize)+testGroupSize):
+                        testCaseList.append(testCaseList_buffer[i])
+                else:
+                    for i in range((int(servernumber)-1)*(testGroupSize),((int(servernumber)-1)*testGroupSize)+testGroupSize+testGroupRemainder):
+                        testCaseList.append(testCaseList_buffer[i])                    
                 
-                with open(self.qst_home+'config/test_case_list.json', 'w') as json_file:
-                    json.dump(testCaseList, json_file)     
+                if (wsid):
+                    with open(self.qst_home+'config/test_case_list'+'_'+wsid+'.json', 'w') as json_file:
+                        json.dump(testCaseList, json_file)  
+                else:
+                    with open(self.qst_home+'config/test_case_list.json', 'w') as json_file:
+                        json.dump(testCaseList, json_file)        
                 
                 if self.qt_log: self.logging.info("* QS_TEST: Test Cases captured for the Test Plan: "+test_plan_id+" and Test Cycle Key: "+cycle_id)
             else:   #  Test plan was not found.  Log and exit
@@ -533,6 +682,53 @@ class qs_test(object):
                 sys.exit()               
         
         return self.test_info_dict['test_plan_key']
+
+    def qst_upload_test_cases_srt(self, test_case_data):
+        myTest = synapsert.synapsert()
+        # Initialize testCaseKeys list before the loop
+        testCaseKeys = []
+        # Iterate through all test cases
+        for test_case in test_case_data['test_cases']:
+            try:
+                resp, respj = myTest.add_test_case(self.jira_url, self.authorization, test_case, self.cert_file)
+            except:    #  If the authorization fails the function will fail
+                if self.qt_log: self.logging.warning("Error Adding Test Case Jira/Testray: "+resp)
+                sys.exit()
+
+            # Extract the key from respj and append to testCaseKeys (without formatting)
+            if 'key' in respj:
+                testCaseKeys.append(respj["key"])  # Just add the raw key to the list
+
+        return testCaseKeys
+
+    def qst_link_test_cases_test_suite_srt(self, projectKey, givenTestSuite, testCaseKeys):
+        myTest = synapsert.synapsert()
+        # Initialize test_case_data list before the loop
+        test_case_data = { 
+             "testCaseKeys": testCaseKeys,  
+             "testSuitePath": givenTestSuite,
+             "projectKey": projectKey
+            }
+
+        # Link Test Cases to the given Test Suite
+        
+        try:
+            resp = myTest.link_test_case_to_test_suite(self.jira_url, self.authorization, test_case_data, self.cert_file)
+        except:    #  If the authorization fails the function will fail
+            if self.qt_log: self.logging.warning("Error Linking Test Case to "+givenTestSuite)
+            sys.exit()
+
+        return resp
+
+    def qst_link_test_cases_requirement_srt(self, requirementKey, test_case_list):
+        myTest = synapsert.synapsert()
+        try:
+            resp = myTest.link_test_case_requirement(self.jira_url, self.authorization, requirementKey, test_case_list, self.cert_file)
+        except:    #  If the authorization fails the function will fail
+            if self.qt_log: self.logging.warning("Error Linking Test Case to "+requirementKey)
+            sys.exit()
+
+        return resp
 
 
 if __name__ == '__main__':
