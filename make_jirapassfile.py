@@ -4,7 +4,7 @@
 Core Test Class for QS_Test
 
 
-Copyright (c) 2018-2022, sci_Zone, Inc.
+Copyright (c) 2018-2026, sci_Zone, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -95,7 +95,8 @@ if __name__ == '__main__':
     if not isExist:
         os.mkdir('log')
     
-    logging.basicConfig(filename='log/make_jirapassfile.log',level=logging.INFO)
+    logging.basicConfig(filename='log/make_jiracredentialfile.log',level=logging.INFO)
+ 
 
     # Operate password encryption function
     main()
